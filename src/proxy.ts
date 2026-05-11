@@ -31,17 +31,39 @@ export async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isAdminRoute = pathname.startsWith("/admin");
-  const isLoginRoute = pathname === "/admin/login";
+  const isLoginRoute = pathname === "/login";
 
-  if (isAdminRoute && !isLoginRoute && !user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/admin/login";
-    return NextResponse.redirect(url);
+  if (isAdminRoute) {
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("redirect_to", pathname);
+      return NextResponse.redirect(url);
+    }
+
+    // Check role; only admins can access /admin/*
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role, active")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || profile.role !== "admin" || !profile.active) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
   }
 
   if (isLoginRoute && user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
     const url = request.nextUrl.clone();
-    url.pathname = "/admin";
+    url.pathname = profile?.role === "admin" ? "/admin" : "/";
     return NextResponse.redirect(url);
   }
 

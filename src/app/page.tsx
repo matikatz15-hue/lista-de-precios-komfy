@@ -1,11 +1,17 @@
 import { getPriceList } from "@/lib/data";
 import { DesktopView } from "@/components/PriceList/DesktopView";
 import { MobileView } from "@/components/PriceList/MobileView";
+import { PublicHeader } from "@/components/PublicHeader";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
-export default async function Page() {
-  const { lines, settings } = await getPriceList();
+type Props = { searchParams: Promise<{ preview?: string }> };
+
+export default async function Page({ searchParams }: Props) {
+  const { preview } = await searchParams;
+  const { lines, settings, viewer } = await getPriceList({
+    previewClientId: preview,
+  });
 
   if (lines.length === 0) {
     return (
@@ -24,6 +30,7 @@ export default async function Page() {
 
   return (
     <>
+      <PublicHeader viewer={viewer} />
       <DesktopView lines={lines} settings={settings} />
       <MobileView lines={lines} settings={settings} />
     </>

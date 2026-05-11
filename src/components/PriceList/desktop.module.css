@@ -410,6 +410,16 @@
   margin-right: 3px;
   font-weight: 700;
 }
+.publicPrice {
+  display: inline-block;
+  font-family: var(--font-barlow);
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--gris);
+  text-decoration: line-through;
+  text-decoration-color: rgba(28, 28, 28, 0.45);
+  margin-right: 0;
+}
 
 /* ===== CONDITIONS PAGE ===== */
 .condPage {

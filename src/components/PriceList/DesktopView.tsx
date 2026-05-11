@@ -1,4 +1,4 @@
-import type { LineWithGroups, Settings, Condition, ProductGroup, Product } from "@/lib/types";
+import type { PricedLine, Settings, Condition, PricedGroup, PricedProduct } from "@/lib/types";
 import { KomfyLogo } from "@/components/KomfyLogo";
 import { ColorSwatch } from "@/components/ColorSwatch";
 import { formatPrice, formatDate } from "@/lib/format";
@@ -6,7 +6,7 @@ import { getPublicImageUrl } from "@/lib/storage";
 import s from "./desktop.module.css";
 
 type Props = {
-  lines: LineWithGroups[];
+  lines: PricedLine[];
   settings: Settings;
 };
 
@@ -63,7 +63,7 @@ function Cover({ settings }: { settings: Settings }) {
   );
 }
 
-function Intro({ settings, lines }: { settings: Settings; lines: LineWithGroups[] }) {
+function Intro({ settings, lines }: { settings: Settings; lines: PricedLine[] }) {
   const totalSkus = lines.reduce(
     (acc, line) => acc + line.groups.reduce((a, g) => a + g.products.length, 0),
     0
@@ -113,7 +113,7 @@ function Stat({ num, suffix, label }: { num: string; suffix?: string; label: str
   );
 }
 
-function LinePage({ line }: { line: LineWithGroups }) {
+function LinePage({ line }: { line: PricedLine }) {
   const eyebrow = line.eyebrow ?? `Línea ${String(line.number).padStart(2, "0")}`;
   const name = renderLineName(line.name, line.highlight_letter);
 
@@ -146,7 +146,7 @@ function renderLineName(name: string, highlight: string | null) {
   );
 }
 
-function ProductBlock({ group }: { group: ProductGroup & { products: Product[] } }) {
+function ProductBlock({ group }: { group: PricedGroup }) {
   const thumbUrl = group.thumbnail_path ? getPublicImageUrl(group.thumbnail_path) : null;
   const metaLabel =
     group.meta_label ??
@@ -196,15 +196,32 @@ function ProductBlock({ group }: { group: ProductGroup & { products: Product[] }
               <td className={s.bul}>
                 <span className={s.pill}>{p.packages}</span>
               </td>
-              <td className={s.price}>
-                <span className={s.cur}>$</span>
-                {formatPrice(p.price)}
-              </td>
+              <PriceCell product={p} />
             </tr>
           ))}
         </tbody>
       </table>
     </div>
+  );
+}
+
+function PriceCell({ product: p }: { product: PricedProduct }) {
+  const hasDiscount = p.discountPercent !== null && p.discountPercent !== 0;
+  if (!hasDiscount) {
+    return (
+      <td className={s.price}>
+        <span className={s.cur}>$</span>
+        {formatPrice(p.price)}
+      </td>
+    );
+  }
+  return (
+    <td className={s.price}>
+      <span className={s.publicPrice}>${formatPrice(p.price)}</span>
+      <br />
+      <span className={s.cur}>$</span>
+      {formatPrice(p.finalPrice)}
+    </td>
   );
 }
 

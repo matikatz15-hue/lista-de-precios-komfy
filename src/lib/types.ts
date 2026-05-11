@@ -66,6 +66,44 @@ export type Settings = {
   updated_at: string;
 };
 
-export type LineWithGroups = Line & {
-  groups: (ProductGroup & { products: Product[] })[];
+export type Profile = {
+  id: string;
+  email: string;
+  full_name: string | null;
+  role: "admin" | "client";
+  active: boolean;
+  created_at: string;
+  updated_at: string;
 };
+
+export type DiscountType = "general" | "line" | "product";
+
+export type Discount = {
+  id: string;
+  client_id: string;
+  type: DiscountType;
+  line_id: string | null;
+  product_id: string | null;
+  percent: number;
+  created_at: string;
+};
+
+// Product with discount applied (publicPrice = original price; finalPrice = price after discount)
+export type PricedProduct = Product & {
+  finalPrice: number;
+  discountPercent: number | null;
+};
+
+export type PricedGroup = ProductGroup & {
+  products: PricedProduct[];
+};
+
+export type PricedLine = Line & {
+  groups: PricedGroup[];
+};
+
+export type Viewer =
+  | { kind: "public" }
+  | { kind: "client"; profile: Profile }
+  | { kind: "admin"; profile: Profile }
+  | { kind: "preview"; admin: Profile; client: Profile };
