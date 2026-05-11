@@ -1,0 +1,78 @@
+"use client";
+
+import { signIn } from "next-auth/react";
+import { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
+
+export default function LoginPage() {
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    const fd = new FormData(e.currentTarget);
+    const res = await signIn("credentials", {
+      email: fd.get("email"),
+      password: fd.get("password"),
+      redirect: false,
+    });
+    setLoading(false);
+    if (res?.ok) {
+      router.push("/admin");
+    } else {
+      setError("Email o contraseña incorrectos.");
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#E8DFD0]">
+      <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-8">
+        <div className="mb-8 text-center">
+          <svg viewBox="0 0 332 100" xmlns="http://www.w3.org/2000/svg" fill="#0047BB" className="h-7 mx-auto mb-4">
+            <path d="M0.1 78.2V0H14.86v44.5h8.69L36.81 23.62h16.15L37.9 46.78c4.66 1.91 8.28 4.9 10.87 8.92 2.59 4.02 3.88 8.46 3.88 13.4v9.24H37.9v-9.24c0-2.21-.57-4.22-1.66-6.03-1.14-1.8-2.59-3.25-4.35-4.33-1.81-1.08-3.78-1.6-6-1.6H14.91v21.25H0.1ZM91.37 79.5c-5.64 0-10.71-1.29-15.16-3.82-4.45-2.52-7.97-5.98-10.56-10.31-2.59-4.33-3.88-9.18-3.88-14.55s1.29-10.21 3.88-14.54c2.59-4.33 6.11-7.74 10.56-10.31 4.45-2.53 9.52-3.82 15.16-3.82s10.72 1.29 15.17 3.82c4.45 2.53 7.97 5.98 10.56 10.31 2.59 4.33 3.88 9.17 3.88 14.54s-1.29 10.22-3.88 14.55c-2.59 4.32-6.11 7.73-10.56 10.31-4.45 2.53-9.52 3.82-15.17 3.82Zm0-12.5c3 0 5.59-.72 7.82-2.16 2.17-1.45 3.88-3.36 5.07-5.78 1.19-2.43 1.76-5.16 1.76-8.15s-.57-5.73-1.76-8.15c-1.19-2.43-2.85-4.39-5.07-5.78-2.17-1.44-4.76-2.17-7.82-2.17s-5.59.72-7.82 2.17c-2.17 1.44-3.88 3.35-5.07 5.78-1.19 2.43-1.76 5.16-1.76 8.15s.57 5.73 1.76 8.15c1.19 2.43 2.85 4.39 5.07 5.78 2.17 1.44 4.76 2.16 7.82 2.16ZM132.27 78.24V45.75c0-4.28 1.04-8.2 3.11-11.81 2.07-3.56 5.07-6.4 9.01-8.51 3.93-2.12 8.64-3.15 14.13-3.15 2.64 0 5.13.31 7.35.93 2.28.62 4.35 1.5 6.32 2.63 1.92 1.13 3.62 2.53 5.07 4.07h.1c1.5-1.55 3.21-2.94 5.18-4.07 1.92-1.13 4.04-2.01 6.37-2.63 2.28-.62 4.76-.93 7.4-.93 5.54 0 10.25 1.03 14.13 3.15 3.94 2.11 6.89 4.95 9.01 8.51 2.07 3.56 3.11 7.53 3.11 11.81v32.49h-14.76V45.75c0-2.01-.51-3.82-1.55-5.47-1.04-1.65-2.43-2.94-4.14-3.97-1.71-.98-3.68-1.5-5.8-1.5s-3.99.52-5.75 1.5c-1.76.98-3.16 2.32-4.19 3.97-1.04 1.65-1.55 3.46-1.55 5.47v32.49h-14.76V45.75c0-2.01-.51-3.82-1.55-5.47-1.04-1.65-2.43-2.94-4.14-3.97-1.71-.98-3.68-1.5-5.8-1.5s-3.99.52-5.75 1.5c-1.76.98-3.16 2.32-4.19 3.97-1.04 1.65-1.55 3.46-1.55 5.47v32.49h-14.76ZM240.73 78.24V36.15h-9.58V23.62h9.58v-8.05c0-4.85 1.4-8.66 4.14-11.4C247.62 1.44 251.45.05 256.31.05h15.58v12.53h-13.04c-.93 0-1.76.31-2.43.98-.67.62-1.04 1.45-1.04 2.48v7.63h14.08v12.53h-14.08v42.13h-14.76Z"/>
+            <path d="M285.72 100V87.47h28.21c.98 0 1.81-.36 2.49-1.03.62-.67.98-1.5.98-2.42V73.08h-.1c-2.28 1.81-4.76 3.1-7.4 3.92-2.64.83-5.28 1.24-7.87 1.24-5.23 0-9.63-1.08-13.15-3.31-3.52-2.22-6.11-5.16-7.87-8.93-1.71-3.71-2.59-7.84-2.59-12.32V23.57h14.76v30.12c0 2.22.51 4.23 1.6 6.04 1.09 1.81 2.54 3.25 4.35 4.33 1.81 1.08 3.83 1.6 6.06 1.6s4.24-.52 6-1.55c1.81-1.03 3.26-2.42 4.35-4.18 1.09-1.75 1.66-3.71 1.66-5.83V23.57h14.76v60.91c0 4.8-1.35 8.56-4.09 11.35-2.74 2.78-6.52 4.18-11.39 4.18h-30.75Z"/>
+            <path d="M52.96 87.47H0V100h52.96V87.47Z" fill="#FFA400"/>
+          </svg>
+          <p className="text-sm text-gray-500">Panel de administración</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
+            <input
+              name="email"
+              type="email"
+              required
+              autoComplete="email"
+              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0047BB] focus:border-transparent"
+              placeholder="admin@komfy.com.ar"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Contraseña</label>
+            <input
+              name="password"
+              type="password"
+              required
+              autoComplete="current-password"
+              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0047BB] focus:border-transparent"
+            />
+          </div>
+
+          {error && <p className="text-red-600 text-sm">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#0047BB] hover:bg-[#003A99] text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-colors disabled:opacity-60"
+          >
+            {loading ? "Ingresando..." : "Ingresar"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}

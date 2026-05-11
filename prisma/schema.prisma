@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+}
+
+// Una línea de productos (MUK, BEL, AIRE, etc.)
+model Line {
+  id          String         @id @default(cuid())
+  name        String         // "MUK"
+  eyebrow     String         // "Línea 01 · 6 colores"
+  description String         // texto del banner
+  order       Int            @default(0)
+  groups      ProductGroup[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+// Un grupo de productos dentro de una línea (Rack TV, Estantería, etc.)
+model ProductGroup {
+  id         String    @id @default(cuid())
+  lineId     String
+  line       Line      @relation(fields: [lineId], references: [id], onDelete: Cascade)
+  name       String    // "Rack TV / Recibidor"
+  dimensions String    // "38 × 143,7 × 95,6 cm"
+  order      Int       @default(0)
+  products   Product[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+// Un SKU individual
+model Product {
+  id         String       @id @default(cuid())
+  groupId    String
+  group      ProductGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  name       String       // "Rack TV / Recibidor"
+  sku        String       // "002-R15-NST"
+  color      String       // "Negro microtexturado"
+  colorHex   String       // "#1C1C1C"
+  colorHex2  String?      // para swatches dobles, e.g. "#B58A5E"
+  dimensions String       // "38 × 143,7 × 95,6 cm"
+  bulkQty    Int          @default(1)
+  price      Float
+  imageUrl   String?
+  order      Int          @default(0)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+// Condiciones comerciales
+model Condition {
+  id       String  @id @default(cuid())
+  code     String  // "TR"
+  label    String  // "Transferencias"
+  detail   String  // "Pago al contado por banco"
+  value    String  // "−10 %"
+  hot      Boolean @default(false) // naranja = destacado
+  order    Int     @default(0)
+}
+
+// Info global del catálogo (vigencia, contacto, etc.)
+model Settings {
+  key   String @id
+  value String
+}
