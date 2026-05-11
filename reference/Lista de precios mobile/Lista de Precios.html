@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="es">
+<head>
+<script src="image-slot.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Komfy · Lista de Precios Mayorista · Marzo 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Noto+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --azul:#0047BB;
+    --azul-dark:#003A99;
+    --naranja:#FFA400;
+    --tiza:#FAF0E6;
+    --tiza-2:#F2E6D5;
+    --negro:#1C1C1C;
+    --gris:#6B6359;
+    --gris-line:rgba(28,28,28,.10);
+    --gris-line-blue:rgba(255,255,255,.18);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#E8DFD0;color:var(--negro);font-family:'Noto Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:24px 16px 64px;display:flex;flex-direction:column;align-items:center;gap:18px}
+
+  /* A4 sheet */
+  .page{
+    width:210mm;height:297mm;background:var(--tiza);
+    box-shadow:0 30px 60px -30px rgba(28,28,28,.35), 0 8px 20px -10px rgba(28,28,28,.15);
+    overflow:hidden;position:relative;display:flex;flex-direction:column;
+  }
+  .page.blue{background:var(--azul);color:white}
+
+  /* ===== COVER ===== */
+  .cover{padding:0;position:relative;overflow:hidden;background:var(--azul);color:white}
+  .cover-grid{
+    height:100%;display:grid;
+    grid-template-rows:auto 1fr auto;
+  }
+  .cover-band{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:18mm 18mm 0;
+  }
+  .cover-eyebrow{
+    display:inline-flex;align-items:center;gap:10px;
+    font-weight:600;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.75);
+  }
+  .cover-eyebrow::before{content:"";width:22px;height:2px;background:var(--naranja);border-radius:2px}
+  .cover-logo{height:28px}
+  .cover-logo svg{height:100%;width:auto;display:block}
+
+  .cover-hero{
+    padding:0 18mm;display:flex;flex-direction:column;justify-content:center;
+  }
+  .cover-title{
+    font-family:'Noto Sans';font-weight:800;font-size:84px;line-height:.92;letter-spacing:-.025em;
+    margin:0;color:white;
+  }
+  .cover-title .dot{color:var(--naranja)}
+  .cover-sub{
+    margin:18px 0 0;font-weight:500;font-size:14px;line-height:1.5;color:rgba(255,255,255,.8);
+    max-width:380px;
+  }
+
+  .cover-foot{
+    padding:0 18mm 18mm;
+    display:grid;grid-template-columns:repeat(3,auto);gap:32px;align-items:end;justify-content:start;
+    border-top:1px solid var(--gris-line-blue);padding-top:14px;margin:0 18mm;
+  }
+  .cover-foot .k{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--naranja);margin-bottom:5px}
+  .cover-foot .v{font-size:13px;font-weight:600;color:white;line-height:1.3}
+
+  /* ===== INTRO PAGE ===== */
+  .intro{padding:18mm 16mm;display:grid;grid-template-columns:1fr 1.15fr;gap:32px;align-items:start;flex:1}
+  .intro-quote{
+    font-family:'Noto Sans';font-weight:800;font-size:36px;line-height:1.02;letter-spacing:-.015em;
+    color:var(--azul);margin:0;
+  }
+  .intro-quote em{font-style:normal;background:var(--naranja);color:var(--negro);padding:0 8px;border-radius:4px}
+  .intro-body{font-size:14px;line-height:1.55;color:var(--negro)}
+  .intro-body p{margin:0 0 12px}
+  .intro-body strong{color:var(--azul)}
+
+  .intro-stats{
+    grid-column:1 / -1;
+    display:grid;grid-template-columns:repeat(4,1fr);gap:14px;
+    margin-top:24px;padding-top:22px;border-top:1px solid var(--gris-line);
+  }
+  .stat .num{font-family:'Barlow Condensed';font-weight:800;font-size:62px;line-height:.9;color:var(--azul);letter-spacing:-.02em}
+  .stat .num small{color:var(--naranja)}
+  .stat .lbl{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);margin-top:4px}
+
+  /* ===== LINE BANNERS ===== */
+  .line-banner{
+    background:var(--azul);color:white;
+    padding:18px 16mm 16px;
+    display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+    position:relative;overflow:hidden;flex-shrink:0;
+  }
+  .line-banner.cream{background:var(--tiza-2);color:var(--negro)}
+  .line-banner .l-eyebrow{
+    font-size:12px;letter-spacing:.22em;text-transform:uppercase;font-weight:700;
+    color:var(--naranja);display:flex;align-items:center;gap:10px;
+  }
+  .line-banner .l-eyebrow::after{content:"";flex:1;height:1px;background:currentColor;opacity:.4;max-width:60px}
+  .line-banner h2{
+    font-family:'Barlow Condensed';font-weight:900;
+    font-size:96px;line-height:.85;letter-spacing:-.02em;margin:4px 0 0;
+    text-transform:uppercase;
+  }
+  .line-banner h2 .lo{color:inherit}
+  .line-banner .l-tag{
+    font-family:'Noto Sans';font-weight:600;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    background:transparent;color:inherit;opacity:.65;padding:6px 0;border-radius:0;align-self:flex-start;
+    white-space:nowrap;border-top:1px solid currentColor;
+  }
+  .line-banner .l-desc{
+    max-width:300px;font-size:13px;line-height:1.45;font-weight:500;
+    opacity:.92;padding-bottom:10px;
+  }
+
+  /* ===== TABLE BLOCKS ===== */
+  .block{padding:14px 16mm 4px}
+  .block:last-child{padding-bottom:18px}
+  .block-head{
+    display:grid;grid-template-columns:54px 1fr;gap:12px;align-items:end;
+    margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--negro);
+  }
+  .block-head .thumb{
+    grid-row:1 / span 2;align-self:center;
+    width:54px;height:54px;border-radius:6px;overflow:hidden;background:var(--tiza-2);
+    display:block;
+  }
+  .block-head .thumb image-slot{width:100%;height:100%;display:block;border-radius:6px}
+  .block-head h3{
+    font-family:'Noto Sans';font-weight:800;font-size:17px;letter-spacing:-.005em;margin:0;
+    align-self:end;
+  }
+  .block-head .count{font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--gris);align-self:start;grid-column:2}
+
+  table.price{width:100%;border-collapse:collapse;font-size:11.5px}
+  table.price thead th{
+    text-align:left;font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
+    color:var(--gris);padding:6px 8px 6px 0;border-bottom:1px solid var(--gris-line);
+  }
+  table.price thead th.num{text-align:right}
+  table.price tbody td{
+    padding:6.5px 8px 6.5px 0;border-bottom:1px solid var(--gris-line);vertical-align:middle;
+  }
+  table.price tbody tr:last-child td{border-bottom:0}
+  table.price tbody tr:hover{background:rgba(0,71,187,.04)}
+
+  td.idx{font-family:'Barlow Condensed';font-weight:700;font-size:13px;color:var(--gris);width:24px}
+  td.prod{font-weight:600;color:var(--negro);min-width:120px;font-size:11.5px;white-space:nowrap}
+  td.code{font-family:'Barlow Condensed';font-weight:600;font-size:12px;letter-spacing:.02em;color:var(--azul);white-space:nowrap}
+  td.color{min-width:160px}
+  .swatch{display:inline-flex;align-items:center;gap:7px;font-weight:500;font-size:11px}
+  .swatch .dot{
+    width:11px;height:11px;border-radius:999px;flex-shrink:0;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.08);
+  }
+  .swatch .dot.split{background:linear-gradient(135deg, var(--c1) 0 50%, var(--c2) 50% 100%)}
+  td.med{font-family:'Barlow Condensed';font-weight:500;font-size:12px;color:var(--gris);white-space:nowrap}
+  td.bul{text-align:center;font-weight:600;width:46px}
+  td.bul .pill{
+    display:inline-flex;align-items:center;justify-content:center;
+    min-width:22px;height:20px;padding:0 7px;border-radius:5px;
+    background:var(--tiza-2);font-family:'Barlow Condensed';font-weight:700;font-size:12px;color:var(--negro);
+  }
+  td.price{
+    text-align:right;font-family:'Barlow Condensed';font-weight:800;font-size:15px;letter-spacing:-.01em;
+    color:var(--negro);white-space:nowrap;width:115px;
+  }
+  td.price .cur{color:var(--naranja);margin-right:3px;font-weight:700}
+
+  /* ===== CONDITIONS PAGE ===== */
+  .cond-page{padding:18mm 16mm;display:grid;grid-template-columns:1.15fr .9fr;gap:28px;flex:1}
+  .cond-title{
+    font-family:'Noto Sans';font-weight:900;font-size:46px;line-height:.95;letter-spacing:-.02em;
+    color:var(--azul);margin:0 0 4px;
+  }
+  .cond-eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--naranja);margin-bottom:10px}
+  .cond-list{display:flex;flex-direction:column;gap:0;margin-top:14px;border-top:1px solid var(--gris-line)}
+  .cond-row{
+    display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
+    padding:10px 0;border-bottom:1px solid var(--gris-line);
+  }
+  .cond-row .ico{
+    width:30px;height:30px;border-radius:7px;background:var(--azul);color:white;
+    display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:13px;
+  }
+  .cond-row .lbl{font-weight:700;font-size:13px}
+  .cond-row .lbl small{display:block;font-weight:500;font-size:11px;color:var(--gris);margin-top:2px;letter-spacing:0;text-transform:none}
+  .cond-row .val{
+    font-family:'Barlow Condensed';font-weight:800;font-size:18px;color:var(--azul);letter-spacing:-.01em;
+    background:var(--tiza-2);padding:3px 10px;border-radius:5px;white-space:nowrap;
+  }
+  .cond-row.hot .val{background:var(--naranja);color:var(--negro)}
+
+  .cond-side{
+    background:var(--azul);color:white;border-radius:5px;padding:20px;
+    display:flex;flex-direction:column;gap:14px;position:relative;overflow:hidden;
+  }
+  .cond-side h4{
+    font-family:'Noto Sans';font-weight:800;font-size:20px;line-height:1.05;margin:0;letter-spacing:-.01em;
+  }
+  .cond-side p{font-size:12.5px;line-height:1.5;margin:0;color:rgba(255,255,255,.85)}
+  .cond-side .cta{
+    margin-top:auto;display:inline-flex;align-items:center;gap:10px;
+    background:var(--naranja);color:var(--negro);font-weight:800;font-size:14px;
+    padding:12px 18px;border-radius:999px;align-self:flex-start;text-decoration:none;
+    letter-spacing:.02em;
+  }
+  .cond-side .cta::after{content:"→";font-family:'Barlow Condensed';font-weight:800;font-size:18px}
+  .cond-side .bg-k{
+    position:absolute;right:-20px;bottom:-90px;font-family:'Barlow Condensed';font-weight:900;
+    font-size:260px;line-height:.78;color:rgba(255,255,255,.07);letter-spacing:-.04em;text-transform:uppercase;pointer-events:none;
+  }
+
+  /* ===== FOOTER ===== */
+  .footer{
+    background:var(--negro);color:var(--tiza);padding:18px 16mm;
+    display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;flex-shrink:0;
+  }
+  .footer-logo{height:28px;display:block}
+  .footer-logo svg{height:100%;width:auto;display:block}
+  .footer-contact{display:flex;flex-direction:column;gap:6px;font-size:12px}
+  .footer-contact a,.footer-contact span{color:var(--tiza);text-decoration:none;display:inline-flex;align-items:center;gap:10px}
+  .footer-contact .lbl{font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:var(--naranja)}
+  .footer-mark{
+    font-family:'Barlow Condensed';font-weight:800;font-size:13px;letter-spacing:.16em;text-transform:uppercase;
+    color:rgba(250,240,230,.5);
+  }
+
+  /* tiny chip used in cover meta */
+  .pill-orange{background:var(--naranja);color:var(--negro);font-weight:800;padding:4px 10px;border-radius:6px;font-size:12px;letter-spacing:.04em}
+
+  /* MUK page accent decoration */
+  .deco-stripe{position:absolute;left:0;right:0;height:8px;background:repeating-linear-gradient(90deg,var(--naranja) 0 24px, transparent 24px 48px)}
+  .deco-stripe.top{top:0}
+  .deco-stripe.bot{bottom:0}
+
+  /* responsive scale-down on small screens — keep A4 layout, just scale */
+  @media (max-width: 820px){
+    body{padding:12px 0 40px}
+    .page{transform-origin:top center}
+  }
+
+  @media print{
+    @page{size:A4;margin:0}
+    html,body{background:white}
+    body{padding:0;gap:0}
+    .page{box-shadow:none;page-break-after:always;break-after:page;width:210mm;height:297mm}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== COVER PAGE ===================== -->
+<section class="page cover" data-screen-label="01 Cover">
+  <div class="cover-grid">
+    <div class="cover-band">
+      <span class="cover-eyebrow">Mayorista · Marzo 2026</span>
+      <div class="cover-logo" aria-label="Komfy">
+        <svg viewBox="0 0 332 100" xmlns="http://www.w3.org/2000/svg" fill="white">
+          <path d="M0.1 78.2V0H14.86v44.5h8.69L36.81 23.62h16.15L37.9 46.78c4.66 1.91 8.28 4.9 10.87 8.92 2.59 4.02 3.88 8.46 3.88 13.4v9.24H37.9v-9.24c0-2.21-.57-4.22-1.66-6.03-1.14-1.8-2.59-3.25-4.35-4.33-1.81-1.08-3.78-1.6-6-1.6H14.91v21.25H0.1ZM91.37 79.5c-5.64 0-10.71-1.29-15.16-3.82-4.45-2.52-7.97-5.98-10.56-10.31-2.59-4.33-3.88-9.18-3.88-14.55s1.29-10.21 3.88-14.54c2.59-4.33 6.11-7.74 10.56-10.31 4.45-2.53 9.52-3.82 15.16-3.82s10.72 1.29 15.17 3.82c4.45 2.53 7.97 5.98 10.56 10.31 2.59 4.33 3.88 9.17 3.88 14.54s-1.29 10.22-3.88 14.55c-2.59 4.32-6.11 7.73-10.56 10.31-4.45 2.53-9.52 3.82-15.17 3.82Zm0-12.5c3 0 5.59-.72 7.82-2.16 2.17-1.45 3.88-3.36 5.07-5.78 1.19-2.43 1.76-5.16 1.76-8.15s-.57-5.73-1.76-8.15c-1.19-2.43-2.85-4.39-5.07-5.78-2.17-1.44-4.76-2.17-7.82-2.17s-5.59.72-7.82 2.17c-2.17 1.44-3.88 3.35-5.07 5.78-1.19 2.43-1.76 5.16-1.76 8.15s.57 5.73 1.76 8.15c1.19 2.43 2.85 4.39 5.07 5.78 2.17 1.44 4.76 2.16 7.82 2.16ZM132.27 78.24V45.75c0-4.28 1.04-8.2 3.11-11.81 2.07-3.56 5.07-6.4 9.01-8.51 3.93-2.12 8.64-3.15 14.13-3.15 2.64 0 5.13.31 7.35.93 2.28.62 4.35 1.5 6.32 2.63 1.92 1.13 3.62 2.53 5.07 4.07h.1c1.5-1.55 3.21-2.94 5.18-4.07 1.92-1.13 4.04-2.01 6.37-2.63 2.28-.62 4.76-.93 7.4-.93 5.54 0 10.25 1.03 14.13 3.15 3.94 2.11 6.89 4.95 9.01 8.51 2.07 3.56 3.11 7.53 3.11 11.81v32.49h-14.76V45.75c0-2.01-.51-3.82-1.55-5.47-1.04-1.65-2.43-2.94-4.14-3.97-1.71-.98-3.68-1.5-5.8-1.5s-3.99.52-5.75 1.5c-1.76.98-3.16 2.32-4.19 3.97-1.04 1.65-1.55 3.46-1.55 5.47v32.49h-14.76V45.75c0-2.01-.51-3.82-1.55-5.47-1.04-1.65-2.43-2.94-4.14-3.97-1.71-.98-3.68-1.5-5.8-1.5s-3.99.52-5.75 1.5c-1.76.98-3.16 2.32-4.19 3.97-1.04 1.65-1.55 3.46-1.55 5.47v32.49h-14.76ZM240.73 78.24V36.15h-9.58V23.62h9.58v-8.05c0-4.85 1.4-8.66 4.14-11.4C247.62 1.44 251.45.05 256.31.05h15.58v12.53h-13.04c-.93 0-1.76.31-2.43.98-.67.62-1.04 1.45-1.04 2.48v7.63h14.08v12.53h-14.08v42.13h-14.76Z"/>
+          <path d="M285.72 100V87.47h28.21c.98 0 1.81-.36 2.49-1.03.62-.67.98-1.5.98-2.42V73.08h-.1c-2.28 1.81-4.76 3.1-7.4 3.92-2.64.83-5.28 1.24-7.87 1.24-5.23 0-9.63-1.08-13.15-3.31-3.52-2.22-6.11-5.16-7.87-8.93-1.71-3.71-2.59-7.84-2.59-12.32V23.57h14.76v30.12c0 2.22.51 4.23 1.6 6.04 1.09 1.81 2.54 3.25 4.35 4.33 1.81 1.08 3.83 1.6 6.06 1.6s4.24-.52 6-1.55c1.81-1.03 3.26-2.42 4.35-4.18 1.09-1.75 1.66-3.71 1.66-5.83V23.57h14.76v60.91c0 4.8-1.35 8.56-4.09 11.35-2.74 2.78-6.52 4.18-11.39 4.18h-30.75ZM52.96 87.47H0V100h52.96V87.47Z"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="cover-hero">
+      <h1 class="cover-title">
+        Lista de<br>precios<span class="dot">.</span>
+      </h1>
+      <p class="cover-sub">
+        Catálogo mayorista de muebles Komfy. Precios netos, sin IVA.
+      </p>
+    </div>
+
+    <div class="cover-foot">
+      <div>
+        <div class="k">Vigencia</div>
+        <div class="v">11 · 03 · 26</div>
+      </div>
+      <div>
+        <div class="k">
+</div>
+        <div class="v">
+</div>
+      </div>
+      <div>
+        <div class="k">Contacto</div>
+        <div class="v">hola@komfy.com.ar</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== INTRO ===================== -->
+<section class="page" data-screen-label="02 Intro">
+  <div class="intro">
+    <h2 class="intro-quote">
+      Diseño <em>cómodo</em><br>
+      y accesible que<br>
+      transforma<br>
+      espacios.
+    </h2>
+    <div class="intro-body">
+      <p><strong>¡Hola!</strong> Esta lista de precios fue creada como una guía clara y cuidada por Komfy para que puedas acceder a nuestras líneas de productos con precios mayoristas claros.</p>
+      <p>En Komfy creemos que el diseño cómodo y accesible transforma espacios. Diseñamos y fabricamos muebles fáciles de armar y pensados para adaptarse a distintos ambientes.</p>
+      <p>
+</p>
+    </div>
+
+    <div class="intro-stats">
+      <div class="stat">
+        <div class="num">3<small>.</small></div>
+        <div class="lbl">Líneas activas</div>
+      </div>
+      <div class="stat">
+        <div class="num">53</div>
+        <div class="lbl">SKUs disponibles</div>
+      </div>
+      <div class="stat">
+        <div class="num">8</div>
+        <div class="lbl">Terminaciones</div>
+      </div>
+      <div class="stat">
+        <div class="num">+IVA</div>
+        <div class="lbl">Precios mayoristas</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== LÍNEA MUK ===================== -->
+<section class="page" data-screen-label="03 Linea Muk">
+  <div class="line-banner">
+    <div>
+      <div class="l-eyebrow">Línea 01 · 6 colores</div>
+      <h2>M<span class="lo">u</span>K</h2>
+    </div>
+    <div class="l-desc">
+      Microtexturados y gris topo. Racks, estanterías, bancos zapateros y mesas bar para sumar carácter al ambiente.
+    </div>
+  </div>
+
+  <!-- MUK · Rack TV -->
+  <div class="block">
+    <div class="block-head">
+      <div class="thumb"><image-slot id="thumb-muk-rack" shape="rounded" radius="4" placeholder="Rack TV"></image-slot></div>
+      <h3>Rack TV / Recibidor</h3>
+      <div class="count">6 terminaciones · 38 × 143,7 × 95,6 cm</div>
+    </div>
+    <table class="price">
+      <thead>
+        <tr>
+          <th>N°</th><th>Producto</th><th>Código</th><th>Color</th><th>Medidas (An × La × Al)</th><th class="num">Bultos</th><th class="num">Precio + IVA</th>
+        </tr>
+      </thead>
+      <tbody id="tbl-muk-rack"></tbody>
+    </table>
+  </div>
+
+  <!-- MUK · Estantería -->
+  <div class="block">
+    <div class="block-head">
+      <div class="thumb"><image-slot id="thumb-muk-est" shape="rounded" radius="4" placeholder="Estantería"></image-slot></div>
+      <h3>Estantería</h3>
+      <div class="count">6 terminaciones · 38 × 63,8 × 164,6 cm</div>
+    </div>
+    <table class="price">
+      <thead>
+        <tr><th>N°</th><th>Producto</th><th>Código</th><th>Color</th><th>Medidas (An × La × Al)</th><th class="num">Bultos</th><th class="num">Precio + IVA</th></tr>
+      </thead>
+      <tbody id="tbl-muk-est"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- MUK page 2 -->
+<section class="page" data-screen-label="04 Linea Muk · 02">
+  <!-- MUK · Banco Zapatero -->
+  <div class="block">
+    <div class="block-head">
+      <div class="thumb"><image-slot id="thumb-muk-z75" shape="rounded" radius="4" placeholder="Banco 75"></image-slot></div>
+      <h3>Banco Zapatero 75 cm</h3>
+      <div class="count">6 terminaciones · 27,4 × 75 × 48 cm</div>
+    </div>
+    <table class="price">
+      <thead>
+        <tr><th>N°</th><th>Producto</th><th>Código</th><th>Color</th><th>Medidas (An × La × Al)</th><th class="num">Bultos</th><th class="num">Precio + IVA</th></tr>
+      </thead>
+      <tbody id="tbl-muk-z75"></tbody>
+    </table>
+  </div>
+
+  <!-- MUK · Mesa Bar -->
+  <div class="block">
+    <div class="block-head">
+      <div class="thumb"><image-slot id="thumb-muk-bar" shape="rounded" radius="4" placeholder="Mesa Bar"></image-slot></div>
+      <h3>Mesa Bar</h3>
+      <div class="count">6 terminaciones · 32,4 × 60,8 × 80 cm</div>
+    </div>
+    <table class="price">
+      <thead>
+        <tr><th>N°</th><th>Producto</th><th>Código</th><th>Color</th><th>Medidas (An × La × Al)</th><th class="num">Bultos</th><th class="num">Precio + IVA</th></tr>
+      </thead>
+      <tbody id="tbl-muk-bar"></tbody>
+    </table>
+  </div>
+
+  <!-- MUK · Mesa Bar Mini -->
+  <div class="block">
+    <div class="block-head">
+      <div class="thumb"><image-slot id="thumb-muk-mini" shape="rounded" radius="4" placeholder="Mesa Mini"></image-slot></div>
+      <h3>Mesa Bar Mini</h3>
+      <div class="count">6 terminaciones · 28,2 × 45,3 × 61,5 cm</div>
+    </div>
+    <table class="price">
+      <thead>
+        <tr><th>N°</th><th>Producto</th><th>Código</th><th>Color</th><th>Medidas (An × La × Al)</th><th class="num">Bultos</th><th class="num">Precio + IVA</th></tr>
+      </thead>
+      <tbody id="tbl-muk-mini"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===================== LÍNEA BEL ===================== -->
+<section class="page" data-screen-label="05 Linea Bel">
+  <div class="line-banner">
+    <div>
+      <div class="l-eyebrow">Línea 02 · Negro Mate + Roble</div>
+      <h2>B<span class="lo">e</span>L</h2>
+    </div>
+    <div class="l-desc">
+      La línea más completa: living, comedor y accesorios. Combinación negro mate y roble bardolino, con telas en Lino, Arena y Gris.
+    </div>
+  </div>
+
+  <!-- BEL · Living -->
+  <div class="block">
+    <div class="block-head">
+      <div class="thumb"><image-slot id="thumb-bel-liv" shape="rounded" radius="4" placeholder="Living Bel"></image-slot></div>
+      <h3>Living</h3>
+      <div class="count">7 productos · Negro Mate / Roble Bardolino</div>
+    </div>
+    <table class="price">
+      <thead>
+        <tr><th>N°</th><th>Producto</th><th>Código</th><th>Color</th><th>Medidas (An × La × Al)</th><th class="num">Bultos</th><th class="num">Precio + IVA</th></tr>
+      </thead>
+      <tbody id="tbl-bel-liv"></tbody>
+    </table>
+  </div>
+
+  <!-- BEL · Comedor -->
+  <div class="block">
+    <div class="block-head">
+      <div class="thumb"><image-slot id="thumb-bel-com" shape="rounded" radius="4" placeholder="Comedor Bel"></image-slot></div>
+      <h3>Comedor</h3>
+      <div class="count">5 productos · Mesas + Sillas Bel</div>
+    </div>
+    <table class="price">
+      <thead>
+        <tr><th>N°</th><th>Producto</th><th>Código</th><th>Color</th><th>Medidas (An × La × Al)</th><th class="num">Bultos</th><th class="num">Precio + IVA</th></tr>
+      </thead>
+      <tbody id="tbl-bel-com"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- BEL page 2 — Accesorios -->
+<section class="page" data-screen-label="06 Bel Accesorios">
+  <div class="block" style="padding-top:48px">
+    <div class="block-head">
+      <div class="thumb"><image-slot id="thumb-bel-acc" shape="rounded" radius="4" placeholder="Accesorios"></image-slot></div>
+      <h3>Accesorios Bel</h3>
+      <div class="count">6 productos · Negro Mate</div>
+    </div>
+    <table class="price">
+      <thead>
+        <tr><th>N°</th><th>Producto</th><th>Código</th><th>Color</th><th>Medidas (An × La × Al)</th><th class="num">Bultos</th><th class="num">Precio + IVA</th></tr>
+      </thead>
+      <tbody id="tbl-bel-acc"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===================== LÍNEA AIRE ===================== -->
+<section class="page" data-screen-label="07 Linea Aire">
+  <div class="line-banner">
+    <div>
+      <div class="l-eyebrow">Línea 03 · Outdoor & Living</div>
+      <h2>A<span class="lo">i</span>RE</h2>
+    </div>
+    <div class="l-desc">
+      Piezas grandes con presencia. Isla parrillera y mesa ratona, en tres terminaciones premium.
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-head">
+      <div class="thumb"><image-slot id="thumb-aire-isla" shape="rounded" radius="4" placeholder="Isla"></image-slot></div>
+      <h3>Isla Parrillera</h3>
+      <div class="count">3 terminaciones · 40 × 125 × 86,1 cm</div>
+    </div>
+    <table class="price">
+      <thead>
+        <tr><th>N°</th><th>Producto</th><th>Código</th><th>Color</th><th>Medidas (An × La × Al)</th><th class="num">Bultos</th><th class="num">Precio + IVA</th></tr>
+      </thead>
+      <tbody id="tbl-aire-isla"></tbody>
+    </table>
+  </div>
+
+  <div class="block">
+    <div class="block-head">
+      <div class="thumb"><image-slot id="thumb-aire-ratona" shape="rounded" radius="4" placeholder="Mesa Ratona"></image-slot></div>
+      <h3>Mesa Ratona</h3>
+      <div class="count">3 terminaciones · 60 × 80 × 43 cm</div>
+    </div>
+    <table class="price">
+      <thead>
+        <tr><th>N°</th><th>Producto</th><th>Código</th><th>Color</th><th>Medidas (An × La × Al)</th><th class="num">Bultos</th><th class="num">Precio + IVA</th></tr>
+      </thead>
+      <tbody id="tbl-aire-mr"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===================== CONDICIONES ===================== -->
+<section class="page" data-screen-label="08 Condiciones">
+  <div class="cond-page">
+    <div>
+      <div class="cond-eyebrow">Información Comercial</div>
+      <h2 class="cond-title">Condiciones<br>de pago<br>y envío.</h2>
+
+      <div class="cond-list">
+        <div class="cond-row">
+          <div class="ico">EC</div>
+          <div class="lbl">E-Cheqs<small>Sobre fecha de factura</small></div>
+          <div class="val">A pactar</div>
+        </div>
+        <div class="cond-row hot">
+          <div class="ico">TR</div>
+          <div class="lbl">Transferencias<small>Pago al contado por banco</small></div>
+          <div class="val">−10 %</div>
+        </div>
+        <div class="cond-row">
+          <div class="ico">RD</div>
+          <div class="lbl">Retiro en depósito<small>Sin costo de logística</small></div>
+          <div class="val">−5 %</div>
+        </div>
+        <div class="cond-row hot">
+          <div class="ico">$+</div>
+          <div class="lbl">Compras mayores a $3.000.000<small>Descuento adicional por volumen</small></div>
+          <div class="val">−5 %</div>
+        </div>
+        <div class="cond-row">
+          <div class="ico">30</div>
+          <div class="lbl">30 días<small>Pago anticipado</small></div>
+          <div class="val">−4 %</div>
+        </div>
+        <div class="cond-row">
+          <div class="ico">60</div>
+          <div class="lbl">30 / 60 días neto<small>Sin descuento, sin recargo</small></div>
+          <div class="val">Neto</div>
+        </div>
+        <div class="cond-row hot">
+          <div class="ico">📦</div>
+          <div class="lbl">Envíos sin costo<small>Con mínimo de compra</small></div>
+          <div class="val">$800.000</div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="cond-side">
+      <div class="bg-k">k</div>
+      <div class="cond-eyebrow" style="color:var(--naranja);position:relative">Sobre Komfy</div>
+      <h4 style="position:relative">Muebles cómodos, fáciles de armar y pensados para vivirse.</h4>
+      <p style="position:relative">Komfy es una marca dedicada al diseño y fabricación de muebles que combinan estética, funcionalidad y confort. Diseñamos y fabricamos pensando en distintos espacios y formas de habitar.</p>
+      <p style="position:relative;font-weight:700;color:white">Envíos a todo el país.</p>
+      <a class="cta" href="https://komfy.com.ar" target="_blank" rel="noopener">komfy.com.ar</a>
+    </aside>
+  </div>
+
+  <div class="footer">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="footer-logo">
+        <svg viewBox="0 0 332 100" xmlns="http://www.w3.org/2000/svg" fill="#FAF0E6">
+          <path d="M0.1 78.2V0H14.86v44.5h8.69L36.81 23.62h16.15L37.9 46.78c4.66 1.91 8.28 4.9 10.87 8.92 2.59 4.02 3.88 8.46 3.88 13.4v9.24H37.9v-9.24c0-2.21-.57-4.22-1.66-6.03-1.14-1.8-2.59-3.25-4.35-4.33-1.81-1.08-3.78-1.6-6-1.6H14.91v21.25H0.1ZM91.37 79.5c-5.64 0-10.71-1.29-15.16-3.82-4.45-2.52-7.97-5.98-10.56-10.31-2.59-4.33-3.88-9.18-3.88-14.55s1.29-10.21 3.88-14.54c2.59-4.33 6.11-7.74 10.56-10.31 4.45-2.53 9.52-3.82 15.16-3.82s10.72 1.29 15.17 3.82c4.45 2.53 7.97 5.98 10.56 10.31 2.59 4.33 3.88 9.17 3.88 14.54s-1.29 10.22-3.88 14.55c-2.59 4.32-6.11 7.73-10.56 10.31-4.45 2.53-9.52 3.82-15.17 3.82Zm0-12.5c3 0 5.59-.72 7.82-2.16 2.17-1.45 3.88-3.36 5.07-5.78 1.19-2.43 1.76-5.16 1.76-8.15s-.57-5.73-1.76-8.15c-1.19-2.43-2.85-4.39-5.07-5.78-2.17-1.44-4.76-2.17-7.82-2.17s-5.59.72-7.82 2.17c-2.17 1.44-3.88 3.35-5.07 5.78-1.19 2.43-1.76 5.16-1.76 8.15s.57 5.73 1.76 8.15c1.19 2.43 2.85 4.39 5.07 5.78 2.17 1.44 4.76 2.16 7.82 2.16ZM132.27 78.24V45.75c0-4.28 1.04-8.2 3.11-11.81 2.07-3.56 5.07-6.4 9.01-8.51 3.93-2.12 8.64-3.15 14.13-3.15 2.64 0 5.13.31 7.35.93 2.28.62 4.35 1.5 6.32 2.63 1.92 1.13 3.62 2.53 5.07 4.07h.1c1.5-1.55 3.21-2.94 5.18-4.07 1.92-1.13 4.04-2.01 6.37-2.63 2.28-.62 4.76-.93 7.4-.93 5.54 0 10.25 1.03 14.13 3.15 3.94 2.11 6.89 4.95 9.01 8.51 2.07 3.56 3.11 7.53 3.11 11.81v32.49h-14.76V45.75c0-2.01-.51-3.82-1.55-5.47-1.04-1.65-2.43-2.94-4.14-3.97-1.71-.98-3.68-1.5-5.8-1.5s-3.99.52-5.75 1.5c-1.76.98-3.16 2.32-4.19 3.97-1.04 1.65-1.55 3.46-1.55 5.47v32.49h-14.76V45.75c0-2.01-.51-3.82-1.55-5.47-1.04-1.65-2.43-2.94-4.14-3.97-1.71-.98-3.68-1.5-5.8-1.5s-3.99.52-5.75 1.5c-1.76.98-3.16 2.32-4.19 3.97-1.04 1.65-1.55 3.46-1.55 5.47v32.49h-14.76ZM240.73 78.24V36.15h-9.58V23.62h9.58v-8.05c0-4.85 1.4-8.66 4.14-11.4C247.62 1.44 251.45.05 256.31.05h15.58v12.53h-13.04c-.93 0-1.76.31-2.43.98-.67.62-1.04 1.45-1.04 2.48v7.63h14.08v12.53h-14.08v42.13h-14.76Z"/>
+          <path d="M285.72 100V87.47h28.21c.98 0 1.81-.36 2.49-1.03.62-.67.98-1.5.98-2.42V73.08h-.1c-2.28 1.81-4.76 3.1-7.4 3.92-2.64.83-5.28 1.24-7.87 1.24-5.23 0-9.63-1.08-13.15-3.31-3.52-2.22-6.11-5.16-7.87-8.93-1.71-3.71-2.59-7.84-2.59-12.32V23.57h14.76v30.12c0 2.22.51 4.23 1.6 6.04 1.09 1.81 2.54 3.25 4.35 4.33 1.81 1.08 3.83 1.6 6.06 1.6s4.24-.52 6-1.55c1.81-1.03 3.26-2.42 4.35-4.18 1.09-1.75 1.66-3.71 1.66-5.83V23.57h14.76v60.91c0 4.8-1.35 8.56-4.09 11.35-2.74 2.78-6.52 4.18-11.39 4.18h-30.75Z"/>
+          <path d="M52.96 87.47H0V100h52.96V87.47Z" fill="#FFA400"/>
+        </svg>
+      </div>
+      <div class="footer-mark">Lista Mayorista · Marzo 2026 · v3.1</div>
+    </div>
+    <div class="footer-contact">
+      <span class="lbl">Comercial</span>
+      <a href="mailto:comercial@komfy.com.ar">✉  comercial@komfy.com.ar</a>
+      <a href="tel:+5493413318965">☎  +54 9 341 331-8965</a>
+      <a href="https://komfy.com.ar" target="_blank" rel="noopener">🌐  komfy.com.ar</a>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Color swatch map
+  const COLORS = {
+    'Negro microtexturado':'#1C1C1C',
+    'Negro Mate':'#1C1C1C',
+    'Blanco microtexturado':'#F2EBE0',
+    'Gris topo liso':'#7A7268',
+    'Gris topo':'#7A7268',
+    'Manteca microtexturado':'#E6CD9C',
+    'Terracota microtexturado':'#B05A3C',
+    'Verde militar microtexturado':'#4A5240',
+    'Roble Bardolino':'#B58A5E',
+    'Tela Lino':'#CCC1A8',
+    'Tela Arena':'#D4B998',
+    'Tela Gris':'#888880',
+  };
+
+  function colorDot(color){
+    // multi-color support: "Negro Mate - Roble Bardolino"
+    const parts = color.split(' - ').map(s => s.trim());
+    if (parts.length === 2 && COLORS[parts[0]] && COLORS[parts[1]]){
+      const c1 = COLORS[parts[0]], c2 = COLORS[parts[1]];
+      return `<span class="dot split" style="--c1:${c1};--c2:${c2}"></span>`;
+    }
+    if (parts.length === 2 && parts[0].startsWith('Negro Mate')){
+      // Tela variants e.g. "Negro Mate - Tela Lino"
+      const c1 = COLORS[parts[0]] || '#1C1C1C';
+      const c2 = COLORS[parts[1]] || '#999';
+      return `<span class="dot split" style="--c1:${c1};--c2:${c2}"></span>`;
+    }
+    const c = COLORS[color] || '#999';
+    return `<span class="dot" style="background:${c}"></span>`;
+  }
+
+  function fmt(n){
+    return n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+
+  function row(r, idx){
+    return `<tr>
+      <td class="idx">${String(idx).padStart(2,'0')}</td>
+      <td class="prod">${r.prod}</td>
+      <td class="code">${r.code}</td>
+      <td class="color"><span class="swatch">${colorDot(r.color)}<span>${r.color}</span></span></td>
+      <td class="med">${r.med}</td>
+      <td class="bul"><span class="pill">${r.bul}</span></td>
+      <td class="price"><span class="cur">$</span>${fmt(r.price)}</td>
+    </tr>`;
+  }
+
+  function render(id, data){
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = data.map((r,i)=>row(r, i+1)).join('');
+  }
+
+  const COLS_MUK = ['Negro microtexturado','Blanco microtexturado','Gris topo liso','Manteca microtexturado','Terracota microtexturado','Verde militar microtexturado'];
+  const SUF_MUK  = ['NST','BLA','GTL','MAM','TEM','VMM'];
+
+  function mukSet(prod, codeBase, med, bul, price){
+    return COLS_MUK.map((c,i)=>({
+      prod, code:`002-${codeBase}-${SUF_MUK[i]}`, color:c, med, bul, price
+    }));
+  }
+
+  // === MUK ===
+  render('tbl-muk-rack', mukSet('Rack TV / Recibidor','R15','38 × 143,7 × 95,6 cm',2,143228.99));
+  render('tbl-muk-est',  mukSet('Estantería','EST','38 × 63,8 × 164,6 cm',2,130278.82));
+  render('tbl-muk-z75',  mukSet('Banco Zapatero 75 cm','Z75','27,4 × 75 × 48 cm',1,80781.15).map((r,i)=>{
+    if (i===2) r.color = 'Gris topo'; // matches PDF inconsistency
+    return r;
+  }));
+  render('tbl-muk-bar',  mukSet('Mesa Bar','BRG','32,4 × 60,8 × 80 cm',1,79446.00));
+  render('tbl-muk-mini', mukSet('Mesa Bar Mini','BAR','28,2 × 45,3 × 61,5 cm',1,70294.47));
+
+  // === BEL · Living ===
+  render('tbl-bel-liv', [
+    { prod:'Estantería Mensula Bel',  code:'001-MEN-NST-BAR', color:'Negro Mate - Roble Bardolino', med:'22 × 120 × 22,8 cm',  bul:1, price:25664.98 },
+    { prod:'Mesa Ratona Bel',         code:'001-M09-NST-BAR', color:'Negro Mate - Roble Bardolino', med:'85 × 55 × 60 cm',     bul:2, price:99441.33 },
+    { prod:'Biblioteca 1 Cuerpo Bel', code:'001-M1C-NST-BAR', color:'Negro Mate - Roble Bardolino', med:'60 × 39 × 124 cm',    bul:2, price:183789.36 },
+    { prod:'Biblioteca 2 Cuerpos Bel',code:'001-M2C-NST-BAR', color:'Negro Mate - Roble Bardolino', med:'80 × 39 × 124 cm',    bul:2, price:198787.13 },
+    { prod:'Biblioteca 3 Cuerpos Bel',code:'001-M3C-NST-BAR', color:'Negro Mate - Roble Bardolino', med:'120 × 39 × 124 cm',   bul:2, price:228782.64 },
+    { prod:'Rack TV Bel',             code:'001-R13-NST-BAR', color:'Negro Mate - Roble Bardolino', med:'128 × 34 × 56 cm',    bul:2, price:144563.77 },
+    { prod:'Mesa de Arrime Bel',      code:'001-MAR-NST-BAR', color:'Negro Mate - Roble Bardolino', med:'40 × 30 × 70 cm',     bul:2, price:43915.67 },
+  ]);
+
+  // === BEL · Comedor ===
+  render('tbl-bel-com', [
+    { prod:'Mesa 120 × 80 cm Bel', code:'001-M12-NST-BAR', color:'Negro Mate - Roble Bardolino', med:'120 × 80 × 74,9 cm',    bul:2, price:135732.61 },
+    { prod:'Mesa 160 × 80 cm Bel', code:'001-M16-NST-BAR', color:'Negro Mate - Roble Bardolino', med:'160 × 80 × 74,9 cm',    bul:2, price:174953.36 },
+    { prod:'Silla Bel · Lino',     code:'001-SIL-NST-WLI', color:'Negro Mate - Tela Lino',       med:'47,8 × 47,9 × 81,2 cm', bul:1, price:55022.52 },
+    { prod:'Silla Bel · Arena',    code:'001-SIL-NST-WAR', color:'Negro Mate - Tela Arena',      med:'47,8 × 47,9 × 81,2 cm', bul:1, price:55022.52 },
+    { prod:'Silla Bel · Gris',     code:'001-SIL-NST-WGR', color:'Negro Mate - Tela Gris',       med:'47,8 × 47,9 × 81,2 cm', bul:1, price:55022.52 },
+  ]);
+
+  // === BEL · Accesorios ===
+  render('tbl-bel-acc', [
+    { prod:'Perchero Simple Bel',     code:'001-PES-NST',     color:'Negro Mate', med:'11 × 3 × 0,16 cm',       bul:1, price:2939.81 },
+    { prod:'Perchero Doble Bel',      code:'001-PED-NST',     color:'Negro Mate', med:'21 × 4,7 × 0,16 cm',     bul:1, price:4054.36 },
+    { prod:'Apoya Libros Bel',        code:'001-APO-NST',     color:'Negro Mate', med:'12,9 × 13 × 10,7 cm',    bul:1, price:4505.67 },
+    { prod:'Organizador de Cables Bel',code:'001-ODC-NST',    color:'Negro Mate', med:'29 × 11,2 × 11 cm',      bul:1, price:25277.61 },
+    { prod:'Abridor de Cerveza Bel',  code:'001-ABR-NST',     color:'Negro Mate', med:'16,1 × 3,5 × 0,16 cm',   bul:1, price:2462.57 },
+    { prod:'Bandeja de Café Bel',     code:'001-B04-NST-BAR', color:'Negro Mate - Roble Bardolino', med:'40 × 30 × 3,8 cm', bul:2, price:13872.75 },
+  ]);
+
+  // === AIRE ===
+  const COLS_AIRE = ['Negro microtexturado','Blanco microtexturado','Gris topo liso'];
+  const SUF_AIRE  = ['NST','BLA','GTL'];
+  render('tbl-aire-isla', COLS_AIRE.map((c,i)=>({
+    prod:'Isla Parrillera', code:`004-IPA-${SUF_AIRE[i]}`, color:c,
+    med:'40 × 125 × 86,1 cm', bul:2, price:458110.47
+  })));
+  render('tbl-aire-mr', COLS_AIRE.map((c,i)=>({
+    prod:'Mesa Ratona', code:`004-MRA-${SUF_AIRE[i]}`, color:c,
+    med:'60 × 80 × 43 cm', bul:2, price:254219.35
+  })));
+</script>
+</body>
+</html>
