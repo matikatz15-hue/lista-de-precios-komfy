@@ -1,4 +1,5 @@
 import { loginAction } from "./actions";
+import { PasswordInput } from "@/components/PasswordInput";
 
 type Props = { searchParams: Promise<{ error?: string; redirect_to?: string }> };
 
@@ -33,10 +34,35 @@ export default async function LoginPage({ searchParams }: Props) {
         <p style={{ fontSize: 13, color: "#6B6359", margin: "0 0 22px" }}>
           Ingresá para ver tu lista con precios personalizados.
         </p>
-        <form action={loginAction} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <form
+          action={loginAction}
+          autoComplete="on"
+          style={{ display: "flex", flexDirection: "column", gap: 14 }}
+        >
           {redirect_to && <input type="hidden" name="redirect_to" value={redirect_to} />}
-          <Field label="Email" name="email" type="email" required autoComplete="email" />
-          <Field label="Contraseña" name="password" type="password" required autoComplete="current-password" />
+          <div>
+            <FieldLabel>Email</FieldLabel>
+            <input
+              id="login-email"
+              name="email"
+              type="email"
+              required
+              autoComplete="username"
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                border: "1px solid #d4d4d8",
+                borderRadius: 8,
+                fontSize: 14,
+                outline: "none",
+                fontFamily: "inherit",
+              }}
+            />
+          </div>
+          <div>
+            <FieldLabel>Contraseña</FieldLabel>
+            <PasswordInput id="login-password" name="password" required autoComplete="current-password" />
+          </div>
           {error && (
             <div style={{ fontSize: 13, color: "#b91c1c", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 6, padding: "8px 12px" }}>
               {error}
@@ -58,54 +84,29 @@ export default async function LoginPage({ searchParams }: Props) {
           >
             Entrar
           </button>
+          <p style={{ fontSize: 11, color: "#9ca3af", textAlign: "center", margin: "8px 0 0" }}>
+            El navegador te va a ofrecer guardar tu usuario y contraseña la primera vez.
+          </p>
         </form>
       </div>
     </div>
   );
 }
 
-function Field({
-  label,
-  name,
-  type,
-  required,
-  autoComplete,
-}: {
-  label: string;
-  name: string;
-  type: string;
-  required?: boolean;
-  autoComplete?: string;
-}) {
+function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div>
-      <label
-        style={{
-          display: "block",
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: ".12em",
-          textTransform: "uppercase",
-          color: "#6B6359",
-          marginBottom: 6,
-        }}
-      >
-        {label}
-      </label>
-      <input
-        name={name}
-        type={type}
-        required={required}
-        autoComplete={autoComplete}
-        style={{
-          width: "100%",
-          padding: "10px 12px",
-          border: "1px solid #d4d4d8",
-          borderRadius: 8,
-          fontSize: 14,
-          outline: "none",
-        }}
-      />
-    </div>
+    <label
+      style={{
+        display: "block",
+        fontSize: 11,
+        fontWeight: 700,
+        letterSpacing: ".12em",
+        textTransform: "uppercase",
+        color: "#6B6359",
+        marginBottom: 6,
+      }}
+    >
+      {children}
+    </label>
   );
 }
