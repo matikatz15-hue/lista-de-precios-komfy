@@ -33,6 +33,10 @@ html, body {
   padding: 0;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: var(--font-noto), system-ui, sans-serif;
   color: var(--negro);

@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { getPriceList } from "@/lib/data";
 import { DesktopView } from "@/components/PriceList/DesktopView";
 import { MobileView } from "@/components/PriceList/MobileView";
@@ -8,8 +9,14 @@ export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ preview?: string }> };
 
+const MOBILE_UA = /Mobile|Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i;
+
 export default async function Page({ searchParams }: Props) {
   const { preview } = await searchParams;
+  const headersList = await headers();
+  const userAgent = headersList.get("user-agent") ?? "";
+  const isMobile = MOBILE_UA.test(userAgent);
+
   const { lines, settings, viewer } = await getPriceList({
     previewClientId: preview,
   });
@@ -32,8 +39,11 @@ export default async function Page({ searchParams }: Props) {
   return (
     <>
       <PublicHeader viewer={viewer} />
-      <DesktopView lines={lines} settings={settings} />
-      <MobileView lines={lines} settings={settings} />
+      {isMobile ? (
+        <MobileView lines={lines} settings={settings} />
+      ) : (
+        <DesktopView lines={lines} settings={settings} />
+      )}
     </>
   );
 }

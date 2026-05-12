@@ -1,6 +1,3 @@
-"use client";
-
-import { forwardRef, useEffect, useRef, useState } from "react";
 import type { PricedLine, Settings, Condition, PricedGroup, PricedProduct } from "@/lib/types";
 import { KomfyLogo } from "@/components/KomfyLogo";
 import { ColorSwatch } from "@/components/ColorSwatch";
@@ -13,26 +10,9 @@ type Props = {
   settings: Settings;
 };
 
+// Server component. Tabs use plain anchor links + CSS smooth scroll
+// (no IntersectionObserver to avoid client-side JS hydration).
 export function MobileView({ lines, settings }: Props) {
-  const [activeTab, setActiveTab] = useState<string>(lines[0]?.slug ?? "cond");
-  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible[0]) setActiveTab(visible[0].target.id);
-      },
-      { rootMargin: "-30% 0px -60% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
-    );
-    Object.values(sectionRefs.current).forEach((el) => el && observer.observe(el));
-    return () => observer.disconnect();
-  }, [lines]);
-
-  const scrollTo = (id: string) => {
-    sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   return (
     <div className={s.root}>
       <div className={s.phone}>
@@ -40,29 +20,16 @@ export function MobileView({ lines, settings }: Props) {
         <MobileIntro settings={settings} lines={lines} />
 
         <nav className={s.tabs}>
-          {lines.map((line) => (
-            <button
-              key={line.id}
-              className={activeTab === line.slug ? s.active : ""}
-              onClick={() => scrollTo(line.slug)}
-            >
+          {lines.map((line, i) => (
+            <a key={line.id} href={`#${line.slug}`} className={i === 0 ? s.active : ""}>
               {line.name}
-            </button>
+            </a>
           ))}
-          <button className={activeTab === "cond" ? s.active : ""} onClick={() => scrollTo("cond")}>
-            Cond.
-          </button>
+          <a href="#cond">Cond.</a>
         </nav>
 
         {lines.map((line) => (
-          <section
-            key={line.id}
-            id={line.slug}
-            ref={(el) => {
-              sectionRefs.current[line.slug] = el;
-            }}
-            className={s.line}
-          >
+          <section key={line.id} id={line.slug} className={s.line}>
             <MobileLineBanner line={line} />
             <div className={s.blocks}>
               {line.groups.map((group) => (
@@ -72,13 +39,7 @@ export function MobileView({ lines, settings }: Props) {
           </section>
         ))}
 
-        <MobileConditions
-          settings={settings}
-          ref={(el) => {
-            sectionRefs.current["cond"] = el;
-          }}
-        />
-
+        <MobileConditions settings={settings} />
         <MobileFooter settings={settings} />
       </div>
     </div>
@@ -263,13 +224,10 @@ function MobileVariant({ product: p, groupName }: { product: PricedProduct; grou
   );
 }
 
-const MobileConditions = forwardRef<HTMLElement, { settings: Settings }>(function MobileConditions(
-  { settings },
-  ref
-) {
+function MobileConditions({ settings }: { settings: Settings }) {
   const conditions = settings.conditions ?? [];
   return (
-    <section id="cond" ref={ref} className={s.cond}>
+    <section id="cond" className={s.cond}>
       <div className={s.condEyebrow}>Información comercial</div>
       <h2>
         Condiciones
@@ -298,7 +256,7 @@ const MobileConditions = forwardRef<HTMLElement, { settings: Settings }>(functio
       </div>
     </section>
   );
-});
+}
 
 function CondRow({ c }: { c: Condition }) {
   return (
