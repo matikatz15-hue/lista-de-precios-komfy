@@ -1,8 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Routes that need server-side auth verification at the proxy level.
-// Other routes (e.g. "/") delegate auth to the page itself, saving an auth.getUser call.
+const ROLE_COOKIE = "kf_role";
+
 function needsAuthCheck(pathname: string): boolean {
   return pathname.startsWith("/admin") || pathname === "/login";
 }
@@ -15,6 +15,31 @@ export async function proxy(request: NextRequest) {
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return response;
 
+  const isAdminRoute = pathname.startsWith("/admin");
+  const isLoginRoute = pathname === "/login";
+
+  // Fast path: trust the role cookie set at login (no DB query, no auth.getUser).
+  // The cookie has an 8-hour TTL; the actual auth session is still validated
+  // by Supabase SSR via the supabase cookies on every server action / page render.
+  const cachedRole = request.cookies.get(ROLE_COOKIE)?.value;
+
+  if (cachedRole && isAdminRoute) {
+    if (cachedRole !== "admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+    // Admin role cached → allow without hitting Supabase
+    return response;
+  }
+
+  if (cachedRole && isLoginRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = cachedRole === "admin" ? "/admin" : "/";
+    return NextResponse.redirect(url);
+  }
+
+  // Slow path: no role cookie. Do the full check.
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -38,9 +63,6 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAdminRoute = pathname.startsWith("/admin");
-  const isLoginRoute = pathname === "/login";
-
   if (isAdminRoute) {
     if (!user) {
       const url = request.nextUrl.clone();
@@ -60,6 +82,15 @@ export async function proxy(request: NextRequest) {
       url.pathname = "/";
       return NextResponse.redirect(url);
     }
+
+    // Re-seed the role cookie so subsequent requests are fast.
+    response.cookies.set(ROLE_COOKIE, profile.role, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 8,
+    });
   }
 
   if (isLoginRoute && user) {

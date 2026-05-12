@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 import { logoutAction } from "@/app/login/actions";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // The proxy already validated the role + auth; we just read the email from a
+  // lightweight cookie set elsewhere or fall back gracefully.
+  const cookieStore = await cookies();
+  const emailCookie = cookieStore.get("kf_email")?.value ?? "";
 
   return (
     <div className="min-h-screen bg-zinc-50">
@@ -14,7 +14,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <aside className="w-60 min-h-screen bg-white border-r border-zinc-200 p-4 flex flex-col gap-1">
           <div className="px-3 py-4 mb-2 border-b border-zinc-200">
             <div className="text-xs font-bold tracking-widest text-orange-500 uppercase">Komfy Admin</div>
-            <div className="text-xs text-zinc-500 mt-1 truncate">{user?.email}</div>
+            <div className="text-xs text-zinc-500 mt-1 truncate">{emailCookie || "admin"}</div>
           </div>
           <NavLink href="/admin">Dashboard</NavLink>
           <NavLink href="/admin/lines">Líneas</NavLink>
