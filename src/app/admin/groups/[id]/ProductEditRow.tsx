@@ -3,9 +3,18 @@
 import { useState } from "react";
 import { SubmitButton } from "@/components/SubmitButton";
 import { updateProductAction, deleteProductAction } from "../../products/actions";
+import { InlinePriceCell } from "./InlinePriceCell";
 import type { Product } from "@/lib/types";
 
-export function ProductEditRow({ product: p }: { product: Product }) {
+type Sibling = { id: string; price: number };
+
+type Props = {
+  product: Product;
+  groupId: string;
+  siblings: Sibling[];
+};
+
+export function ProductEditRow({ product: p, groupId, siblings }: Props) {
   const [editing, setEditing] = useState(false);
 
   const swatchStyle: React.CSSProperties = p.color_hex_secondary
@@ -28,8 +37,13 @@ export function ProductEditRow({ product: p }: { product: Product }) {
       </td>
       <td className="px-3 py-3 text-xs text-zinc-600">{p.dimensions}</td>
       <td className="px-3 py-3 text-right">{p.packages}</td>
-      <td className="px-3 py-3 text-right font-mono font-semibold">
-        ${Number(p.price).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+      <td className="px-3 py-3 text-right">
+        <InlinePriceCell
+          productId={p.id}
+          groupId={groupId}
+          currentPrice={Number(p.price)}
+          siblings={siblings}
+        />
       </td>
       <td className="px-3 py-3 text-right relative">
         <button

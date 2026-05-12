@@ -5,6 +5,55 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { invalidatePriceList } from "@/lib/cache";
 
+// Inline price update — used by the Excel-style cell.
+// Returns the group id so the client can decide whether to prompt propagation.
+export async function setProductPrice(
+  productId: string,
+  newPrice: number
+): Promise<{ ok: boolean; groupId?: string; error?: string }> {
+  if (!productId || !Number.isFinite(newPrice) || newPrice < 0) {
+    return { ok: false, error: "Precio inválido" };
+  }
+  const supabase = await createClient();
+  const { data: existing, error: fetchErr } = await supabase
+    .from("products")
+    .select("product_group_id")
+    .eq("id", productId)
+    .single();
+  if (fetchErr || !existing) return { ok: false, error: "No se encontró el producto" };
+
+  const { error } = await supabase
+    .from("products")
+    .update({ price: newPrice })
+    .eq("id", productId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath(`/admin/groups/${existing.product_group_id}`);
+  invalidatePriceList();
+  return { ok: true, groupId: existing.product_group_id };
+}
+
+// Apply the same price to every product of a group.
+export async function applyPriceToGroup(
+  groupId: string,
+  newPrice: number
+): Promise<{ ok: boolean; updated?: number; error?: string }> {
+  if (!groupId || !Number.isFinite(newPrice) || newPrice < 0) {
+    return { ok: false, error: "Datos inválidos" };
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("products")
+    .update({ price: newPrice })
+    .eq("product_group_id", groupId)
+    .select("id");
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath(`/admin/groups/${groupId}`);
+  invalidatePriceList();
+  return { ok: true, updated: data?.length ?? 0 };
+}
+
 export async function createProductAction(formData: FormData) {
   const supabase = await createClient();
   const product_group_id = String(formData.get("product_group_id"));

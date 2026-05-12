@@ -117,7 +117,14 @@ export default async function GroupDetailPage({ params, searchParams }: PageProp
               </thead>
               <tbody>
                 {products.map((p) => (
-                  <ProductEditRow key={p.id} product={p} />
+                  <ProductEditRow
+                    key={p.id}
+                    product={p}
+                    groupId={group.id}
+                    siblings={products
+                      .filter((s) => s.id !== p.id)
+                      .map((s) => ({ id: s.id, price: Number(s.price) }))}
+                  />
                 ))}
               </tbody>
             </table>
