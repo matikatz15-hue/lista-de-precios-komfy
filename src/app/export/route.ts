@@ -40,9 +40,9 @@ export async function GET(request: Request) {
     "Color",
     "Medidas",
     "Bultos",
-    "Precio público",
+    "Precio",
   ];
-  if (hasAnyDiscount) headers.push("Tu precio");
+  if (hasAnyDiscount) headers.push("Precio con descuento");
 
   const rows: string[][] = [headers];
 
