@@ -125,9 +125,8 @@ export default async function ClientDetailPage({ params, searchParams }: Props) 
           <input
             name="new_password"
             type="text"
-            placeholder="nueva contraseña (min 6)"
+            placeholder="nueva contraseña"
             required
-            minLength={6}
             className="flex-1 px-3 py-2 border border-zinc-300 rounded-md text-sm"
           />
           <button

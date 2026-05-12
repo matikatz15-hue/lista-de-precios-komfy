@@ -82,11 +82,14 @@ export async function resetPasswordAction(formData: FormData) {
   const admin = createAdminClient();
   const id = String(formData.get("id"));
   const newPassword = String(formData.get("new_password") ?? "");
-  if (!newPassword || newPassword.length < 6) {
-    redirect(`/admin/clientes/${id}?error=password%20muy%20corta`);
+  if (!newPassword) {
+    redirect(`/admin/clientes/${id}?error=${encodeURIComponent("Ingresá una contraseña")}`);
   }
-  await admin.auth.admin.updateUserById(id, { password: newPassword });
-  redirect(`/admin/clientes/${id}?msg=password%20actualizada`);
+  const { error } = await admin.auth.admin.updateUserById(id, { password: newPassword });
+  if (error) {
+    redirect(`/admin/clientes/${id}?error=${encodeURIComponent(error.message)}`);
+  }
+  redirect(`/admin/clientes/${id}?msg=${encodeURIComponent("Contraseña actualizada")}`);
 }
 
 export async function deleteClientAction(formData: FormData) {
