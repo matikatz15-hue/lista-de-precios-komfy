@@ -14,12 +14,12 @@ import type { ProductGroup, Product, Line } from "@/lib/types";
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string }>;
 };
 
 export default async function GroupDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params;
-  const { saved } = await searchParams;
+  const { saved, error } = await searchParams;
   const supabase = await createClient();
 
   const [groupRes, productsRes, colorPaletteRes] = await Promise.all([
@@ -75,6 +75,12 @@ export default async function GroupDetailPage({ params, searchParams }: PageProp
         <div className="mb-6 flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2">
           <span>✓</span>
           <span>{saved}</span>
+        </div>
+      )}
+      {error && (
+        <div className="mb-6 flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+          <span>⚠</span>
+          <span>{error}</span>
         </div>
       )}
 

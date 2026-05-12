@@ -108,15 +108,21 @@ export async function applyPriceToGroup(
   return { ok: true, updated: data?.length ?? 0 };
 }
 
+function describeError(error: { code?: string; message: string }, sku: string) {
+  if (error.code === "23505") return `El SKU "${sku}" ya está en uso por otro producto.`;
+  return error.message;
+}
+
 export async function createProductAction(formData: FormData) {
   const supabase = await createClient();
   const product_group_id = String(formData.get("product_group_id"));
   const name = String(formData.get("name") ?? "").trim();
+  const sku = String(formData.get("sku") ?? "").trim();
 
-  await supabase.from("products").insert({
+  const { error } = await supabase.from("products").insert({
     product_group_id,
     name,
-    sku: String(formData.get("sku") ?? "").trim(),
+    sku,
     color_name: String(formData.get("color_name") ?? "").trim(),
     color_hex: String(formData.get("color_hex") ?? "#999999").trim(),
     color_hex_secondary: String(formData.get("color_hex_secondary") ?? "").trim() || null,
@@ -127,6 +133,12 @@ export async function createProductAction(formData: FormData) {
     active: true,
   });
 
+  if (error) {
+    redirect(
+      `/admin/groups/${product_group_id}?error=${encodeURIComponent(describeError(error, sku))}`
+    );
+  }
+
   revalidatePath(`/admin/groups/${product_group_id}`);
   invalidatePriceList();
   redirect(`/admin/groups/${product_group_id}?saved=${encodeURIComponent("Variante agregada")}`);
@@ -135,6 +147,7 @@ export async function createProductAction(formData: FormData) {
 export async function updateProductAction(formData: FormData) {
   const supabase = await createClient();
   const id = String(formData.get("id"));
+  const sku = String(formData.get("sku") ?? "").trim();
 
   const { data: existing } = await supabase
     .from("products")
@@ -142,11 +155,11 @@ export async function updateProductAction(formData: FormData) {
     .eq("id", id)
     .single();
 
-  await supabase
+  const { error } = await supabase
     .from("products")
     .update({
       name: String(formData.get("name") ?? "").trim(),
-      sku: String(formData.get("sku") ?? "").trim(),
+      sku,
       color_name: String(formData.get("color_name") ?? "").trim(),
       color_hex: String(formData.get("color_hex") ?? "#999999").trim(),
       color_hex_secondary: String(formData.get("color_hex_secondary") ?? "").trim() || null,
@@ -157,6 +170,12 @@ export async function updateProductAction(formData: FormData) {
       active: formData.get("active") === "on",
     })
     .eq("id", id);
+
+  if (error && existing?.product_group_id) {
+    redirect(
+      `/admin/groups/${existing.product_group_id}?error=${encodeURIComponent(describeError(error, sku))}`
+    );
+  }
 
   if (existing?.product_group_id) revalidatePath(`/admin/groups/${existing.product_group_id}`);
   invalidatePriceList();
