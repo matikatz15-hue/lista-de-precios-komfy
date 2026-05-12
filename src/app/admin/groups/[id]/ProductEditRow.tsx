@@ -42,20 +42,29 @@ export function ProductEditRow({ product: p }: { product: Product }) {
 
         {editing && (
           <>
-            {/* Backdrop to close on outside click */}
+            {/* Backdrop */}
             <div
-              className="fixed inset-0 z-10"
+              className="fixed inset-0 bg-black/40 z-40"
               onClick={() => setEditing(false)}
               aria-hidden
             />
-            <div className="absolute right-0 top-full mt-2 bg-white shadow-xl rounded-lg border border-zinc-200 p-5 w-[420px] z-20 text-left">
-              <div className="flex items-center justify-between mb-3 pb-2 border-b border-zinc-100">
-                <div className="font-semibold text-sm">Editar variante</div>
+            {/* Modal */}
+            <div
+              role="dialog"
+              aria-modal="true"
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white shadow-2xl rounded-xl border border-zinc-200 p-6 w-[460px] max-w-[calc(100vw-24px)] max-h-[calc(100vh-24px)] overflow-y-auto z-50 text-left"
+            >
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-100">
+                <div>
+                  <div className="text-xs font-bold tracking-widest text-orange-500 uppercase">Editar variante</div>
+                  <div className="font-semibold text-base text-zinc-900 mt-0.5">{p.name}</div>
+                  <div className="text-xs font-mono text-zinc-500 mt-0.5">{p.sku}</div>
+                </div>
                 <button
                   type="button"
                   onClick={() => setEditing(false)}
                   aria-label="Cerrar"
-                  className="w-7 h-7 flex items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 text-lg leading-none"
+                  className="w-8 h-8 flex items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 text-xl leading-none"
                 >
                   ×
                 </button>
@@ -66,28 +75,37 @@ export function ProductEditRow({ product: p }: { product: Product }) {
                 <MiniField label="SKU" name="sku" defaultValue={p.sku} />
                 <MiniField label="Color" name="color_name" defaultValue={p.color_name} />
                 <MiniField label="Hex" name="color_hex" defaultValue={p.color_hex} />
-                <MiniField label="Hex 2" name="color_hex_secondary" defaultValue={p.color_hex_secondary ?? ""} />
+                <MiniField label="Hex 2 (bicolor)" name="color_hex_secondary" defaultValue={p.color_hex_secondary ?? ""} />
                 <MiniField label="Medidas" name="dimensions" defaultValue={p.dimensions} className="col-span-2" />
                 <MiniField label="Bultos" name="packages" type="number" defaultValue={String(p.packages)} />
                 <MiniField label="Precio" name="price" type="number" step="0.01" defaultValue={String(p.price)} />
                 <MiniField label="Orden" name="sort_order" type="number" defaultValue={String(p.sort_order)} />
-                <label className="text-xs flex items-center gap-2">
+                <label className="text-xs flex items-center gap-2 pt-1">
                   <input type="checkbox" name="active" defaultChecked={p.active} /> Activa
                 </label>
-                <div className="col-span-2 flex justify-between items-center pt-2">
+                <div className="col-span-2 flex justify-between items-center pt-3 border-t border-zinc-100 mt-2">
                   <SubmitButton
                     formAction={deleteProductAction}
                     pendingText="Eliminando…"
-                    className="text-red-600 text-xs font-semibold"
+                    className="text-red-600 hover:text-red-700 text-xs font-semibold uppercase tracking-wider"
                   >
                     Eliminar
                   </SubmitButton>
-                  <SubmitButton
-                    pendingText="Guardando…"
-                    className="px-3 py-1.5 bg-[#0047BB] text-white font-semibold text-xs rounded-md"
-                  >
-                    Guardar
-                  </SubmitButton>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditing(false)}
+                      className="px-3 py-2 bg-white border border-zinc-300 text-zinc-700 hover:bg-zinc-50 font-semibold text-xs rounded-md"
+                    >
+                      Cancelar
+                    </button>
+                    <SubmitButton
+                      pendingText="Guardando…"
+                      className="px-4 py-2 bg-[#0047BB] hover:bg-[#003691] text-white font-semibold text-xs rounded-md"
+                    >
+                      Guardar
+                    </SubmitButton>
+                  </div>
                 </div>
               </form>
             </div>
