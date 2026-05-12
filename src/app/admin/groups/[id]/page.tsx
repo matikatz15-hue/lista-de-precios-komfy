@@ -37,16 +37,20 @@ export default async function GroupDetailPage({ params, searchParams }: PageProp
   const products = (productsRes.data ?? []) as Product[];
   const thumbUrl = group.thumbnail_path ? getPublicImageUrl(group.thumbnail_path) : null;
 
-  // Distinct color palette across the whole catalog
+  // Distinct color palette across the whole catalog, with usage count
   const colorMap = new Map<string, ColorOption>();
   for (const cp of colorPaletteRes.data ?? []) {
     const c = cp as { color_name: string; color_hex: string; color_hex_secondary: string | null };
     const key = `${c.color_name}__${c.color_hex}__${c.color_hex_secondary ?? ""}`;
-    if (!colorMap.has(key)) {
+    const existing = colorMap.get(key);
+    if (existing) {
+      existing.count = (existing.count ?? 0) + 1;
+    } else {
       colorMap.set(key, {
         name: c.color_name,
         hex: c.color_hex,
         hex2: c.color_hex_secondary,
+        count: 1,
       });
     }
   }

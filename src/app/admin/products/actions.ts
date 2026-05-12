@@ -33,6 +33,60 @@ export async function setProductPrice(
   return { ok: true, groupId: existing.product_group_id };
 }
 
+// Update one color's name/hex/hex2 across every product that uses it.
+// Identified by the exact tuple (color_name, color_hex, color_hex_secondary).
+export async function updatePaletteColor(args: {
+  oldName: string;
+  oldHex: string;
+  oldHex2: string | null;
+  newName: string;
+  newHex: string;
+  newHex2: string | null;
+}): Promise<{ ok: boolean; updated?: number; error?: string }> {
+  const { oldName, oldHex, oldHex2, newName, newHex, newHex2 } = args;
+  if (!newName.trim() || !/^#[0-9a-fA-F]{3,8}$/.test(newHex)) {
+    return { ok: false, error: "Datos inválidos" };
+  }
+  const supabase = await createClient();
+
+  // Find affected rows first so we can report a count and revalidate by group
+  let query = supabase
+    .from("products")
+    .select("id, product_group_id")
+    .eq("color_name", oldName)
+    .eq("color_hex", oldHex);
+  if (oldHex2) query = query.eq("color_hex_secondary", oldHex2);
+  else query = query.is("color_hex_secondary", null);
+
+  const { data: affected, error: findErr } = await query;
+  if (findErr) return { ok: false, error: findErr.message };
+  if (!affected || affected.length === 0) {
+    return { ok: false, error: "No se encontraron productos con ese color" };
+  }
+
+  let updateQ = supabase
+    .from("products")
+    .update({
+      color_name: newName.trim(),
+      color_hex: newHex,
+      color_hex_secondary: newHex2 && newHex2.trim() ? newHex2.trim() : null,
+    })
+    .eq("color_name", oldName)
+    .eq("color_hex", oldHex);
+  if (oldHex2) updateQ = updateQ.eq("color_hex_secondary", oldHex2);
+  else updateQ = updateQ.is("color_hex_secondary", null);
+
+  const { error: updateErr } = await updateQ;
+  if (updateErr) return { ok: false, error: updateErr.message };
+
+  // Revalidate every affected group
+  const groupIds = new Set(affected.map((r) => r.product_group_id));
+  for (const gid of groupIds) revalidatePath(`/admin/groups/${gid}`);
+  revalidatePath("/admin/precios");
+  invalidatePriceList();
+  return { ok: true, updated: affected.length };
+}
+
 // Apply the same price to every product of a group.
 export async function applyPriceToGroup(
   groupId: string,
