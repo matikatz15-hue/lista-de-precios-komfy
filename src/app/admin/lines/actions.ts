@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { invalidatePriceList } from "@/lib/cache";
 
 function slugify(s: string) {
   return s
@@ -37,7 +38,7 @@ export async function createLineAction(formData: FormData) {
   });
 
   revalidatePath("/admin/lines");
-  revalidatePath("/");
+  invalidatePriceList();
 }
 
 export async function updateLineAction(formData: FormData) {

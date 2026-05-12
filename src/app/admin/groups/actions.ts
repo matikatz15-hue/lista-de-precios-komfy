@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { invalidatePriceList } from "@/lib/cache";
 
 async function uploadThumbnail(file: File, groupId: string): Promise<string | null> {
   if (!file || file.size === 0) return null;
@@ -52,7 +53,7 @@ export async function createGroupAction(formData: FormData) {
   }
 
   revalidatePath(`/admin/lines/${line_id}`);
-  revalidatePath("/");
+  invalidatePriceList();
 }
 
 export async function updateGroupAction(formData: FormData) {
@@ -85,7 +86,7 @@ export async function updateGroupAction(formData: FormData) {
   }
 
   revalidatePath(`/admin/groups/${id}`);
-  revalidatePath("/");
+  invalidatePriceList();
 }
 
 export async function deleteGroupAction(formData: FormData) {
@@ -101,7 +102,7 @@ export async function deleteGroupAction(formData: FormData) {
   if (data?.thumbnail_path) await deleteThumbnail(data.thumbnail_path);
   await supabase.from("product_groups").delete().eq("id", id);
 
-  revalidatePath("/");
+  invalidatePriceList();
   if (data?.line_id) {
     revalidatePath(`/admin/lines/${data.line_id}`);
     redirect(`/admin/lines/${data.line_id}`);

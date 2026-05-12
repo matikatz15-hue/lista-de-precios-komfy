@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { invalidatePriceList } from "@/lib/cache";
 import type { Condition } from "@/lib/types";
 
 export async function updateSettingsAction(formData: FormData) {
@@ -38,5 +39,5 @@ export async function updateSettingsAction(formData: FormData) {
     .eq("id", 1);
 
   revalidatePath("/admin/settings");
-  revalidatePath("/");
+  invalidatePriceList();
 }

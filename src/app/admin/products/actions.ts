@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { invalidatePriceList } from "@/lib/cache";
 
 export async function createProductAction(formData: FormData) {
   const supabase = await createClient();
@@ -23,7 +24,7 @@ export async function createProductAction(formData: FormData) {
   });
 
   revalidatePath(`/admin/groups/${product_group_id}`);
-  revalidatePath("/");
+  invalidatePriceList();
 }
 
 export async function updateProductAction(formData: FormData) {
@@ -53,7 +54,7 @@ export async function updateProductAction(formData: FormData) {
     .eq("id", id);
 
   if (existing?.product_group_id) revalidatePath(`/admin/groups/${existing.product_group_id}`);
-  revalidatePath("/");
+  invalidatePriceList();
 }
 
 export async function deleteProductAction(formData: FormData) {
@@ -70,7 +71,7 @@ export async function deleteProductAction(formData: FormData) {
 
   if (existing?.product_group_id) {
     revalidatePath(`/admin/groups/${existing.product_group_id}`);
-    revalidatePath("/");
+    invalidatePriceList();
     redirect(`/admin/groups/${existing.product_group_id}`);
   }
 }

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { invalidatePriceList } from "@/lib/cache";
 
 async function assertAdmin() {
   const supabase = await createClient();
@@ -93,7 +94,7 @@ export async function deleteClientAction(formData: FormData) {
   const id = String(formData.get("id"));
   await admin.auth.admin.deleteUser(id);
   revalidatePath("/admin/clientes");
-  revalidatePath("/");
+  invalidatePriceList();
   redirect("/admin/clientes");
 }
 
@@ -122,7 +123,7 @@ export async function upsertGeneralDiscountAction(formData: FormData) {
   }
 
   revalidatePath(`/admin/clientes/${client_id}`);
-  revalidatePath("/");
+  invalidatePriceList();
 }
 
 export async function upsertLineDiscountAction(formData: FormData) {
@@ -152,7 +153,7 @@ export async function upsertLineDiscountAction(formData: FormData) {
   }
 
   revalidatePath(`/admin/clientes/${client_id}`);
-  revalidatePath("/");
+  invalidatePriceList();
 }
 
 export async function addProductDiscountAction(formData: FormData) {
@@ -178,7 +179,7 @@ export async function addProductDiscountAction(formData: FormData) {
   });
 
   revalidatePath(`/admin/clientes/${client_id}`);
-  revalidatePath("/");
+  invalidatePriceList();
 }
 
 export async function deleteDiscountAction(formData: FormData) {
@@ -188,5 +189,5 @@ export async function deleteDiscountAction(formData: FormData) {
   const client_id = String(formData.get("client_id"));
   await supabase.from("discounts").delete().eq("id", id);
   revalidatePath(`/admin/clientes/${client_id}`);
-  revalidatePath("/");
+  invalidatePriceList();
 }

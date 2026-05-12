@@ -1,4 +1,7 @@
+import { unstable_cache } from "next/cache";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { PRICE_LIST_TAG } from "@/lib/cache";
 import type {
   Line,
   ProductGroup,
@@ -11,6 +14,40 @@ import type {
   Viewer,
 } from "@/lib/types";
 import { applyDiscount, buildDiscountLookup, discountFor } from "@/lib/price";
+
+const CATALOG_TTL = 3600; // 1h fallback; tag invalidation kicks in on admin edits
+
+// Cookieless anon client used inside unstable_cache (RLS allows public reads).
+function catalogClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false } }
+  );
+}
+
+const getCachedCatalog = unstable_cache(
+  async () => {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      return { lines: [], groups: [], products: [], settings: defaultSettings() };
+    }
+    const sb = catalogClient();
+    const [linesRes, groupsRes, productsRes, settingsRes] = await Promise.all([
+      sb.from("lines").select("*").eq("active", true).order("sort_order"),
+      sb.from("product_groups").select("*").order("sort_order"),
+      sb.from("products").select("*").eq("active", true).order("sort_order"),
+      sb.from("settings").select("*").eq("id", 1).single(),
+    ]);
+    return {
+      lines: (linesRes.data ?? []) as Line[],
+      groups: (groupsRes.data ?? []) as ProductGroup[],
+      products: (productsRes.data ?? []) as Product[],
+      settings: (settingsRes.data ?? defaultSettings()) as Settings,
+    };
+  },
+  ["catalog"],
+  { tags: [PRICE_LIST_TAG], revalidate: CATALOG_TTL }
+);
 
 export async function getPriceList(opts?: { previewClientId?: string }): Promise<{
   lines: PricedLine[];
@@ -26,21 +63,14 @@ export async function getPriceList(opts?: { previewClientId?: string }): Promise
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return empty;
 
   try {
+    // Static catalog data — cached, fast
+    const { lines, groups, products, settings } = await getCachedCatalog();
+
+    // Auth + discounts data — dynamic, only when needed
     const supabase = await createClient();
-
-    const [linesRes, groupsRes, productsRes, settingsRes, userRes] = await Promise.all([
-      supabase.from("lines").select("*").eq("active", true).order("sort_order"),
-      supabase.from("product_groups").select("*").order("sort_order"),
-      supabase.from("products").select("*").eq("active", true).order("sort_order"),
-      supabase.from("settings").select("*").eq("id", 1).single(),
-      supabase.auth.getUser(),
-    ]);
-
-    const lines = (linesRes.data ?? []) as Line[];
-    const groups = (groupsRes.data ?? []) as ProductGroup[];
-    const products = (productsRes.data ?? []) as Product[];
-    const settings = (settingsRes.data ?? defaultSettings()) as Settings;
-    const user = userRes.data.user;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     let viewer: Viewer = { kind: "public" };
     let clientIdForDiscounts: string | null = null;
