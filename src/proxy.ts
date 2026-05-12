@@ -53,7 +53,7 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    let role = cachedRole;
+    let role: string | undefined = cachedRole;
     if (role !== "admin" && role !== "client") {
       // Cookie missing or unexpected value → check DB once and re-seed.
       const { data: profile } = await supabase
@@ -66,7 +66,7 @@ export async function proxy(request: NextRequest) {
         url.pathname = "/";
         return NextResponse.redirect(url);
       }
-      role = profile.role;
+      role = profile.role as string;
       response.cookies.set(ROLE_COOKIE, role, {
         httpOnly: true,
         secure: true,
