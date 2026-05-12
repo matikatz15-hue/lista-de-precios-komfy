@@ -6,12 +6,15 @@ import { PublicHeader } from "@/components/PublicHeader";
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
-type Props = { searchParams: Promise<{ preview?: string }> };
+type Props = {
+  searchParams: Promise<{ preview?: string; version?: string }>;
+};
 
 export default async function Page({ searchParams }: Props) {
-  const { preview } = await searchParams;
-  const { lines, settings, viewer } = await getPriceList({
+  const { preview, version } = await searchParams;
+  const { lines, settings, viewer, snapshot, availableSnapshots } = await getPriceList({
     previewClientId: preview,
+    snapshotId: version,
   });
 
   if (lines.length === 0) {
@@ -29,12 +32,13 @@ export default async function Page({ searchParams }: Props) {
     );
   }
 
-  // Render both views; CSS media queries pick the right one based on viewport
-  // width (more reliable than User-Agent detection which fails in DevTools,
-  // iPad, or custom UAs).
   return (
     <>
-      <PublicHeader viewer={viewer} />
+      <PublicHeader
+        viewer={viewer}
+        snapshot={snapshot}
+        availableSnapshots={availableSnapshots}
+      />
       <DesktopView lines={lines} settings={settings} />
       <MobileView lines={lines} settings={settings} />
     </>

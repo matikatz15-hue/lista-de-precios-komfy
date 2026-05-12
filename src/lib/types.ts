@@ -107,3 +107,41 @@ export type Viewer =
   | { kind: "client"; profile: Profile }
   | { kind: "admin"; profile: Profile }
   | { kind: "preview"; admin: Profile; client: Profile };
+
+export type PriceSnapshot = {
+  id: string;
+  name: string;
+  effective_date: string | null;
+  notes: string | null;
+  created_at: string;
+  created_by: string | null;
+};
+
+export type PriceSnapshotItem = {
+  id: string;
+  snapshot_id: string;
+  product_id: string | null;
+  product_name: string;
+  sku: string;
+  color_name: string;
+  color_hex: string;
+  color_hex_secondary: string | null;
+  dimensions: string;
+  packages: number;
+  price: number;
+  sort_order: number;
+  product_group_id: string | null;
+  group_name: string;
+  group_sort_order: number;
+  group_thumbnail_path: string | null;
+  line_id: string | null;
+  line_name: string;
+  line_slug: string;
+  line_number: number;
+  line_eyebrow: string | null;
+  line_description: string | null;
+  line_highlight_letter: string | null;
+  line_banner_style: "blue" | "cream";
+  line_sort_order: number;
+  created_at: string;
+};

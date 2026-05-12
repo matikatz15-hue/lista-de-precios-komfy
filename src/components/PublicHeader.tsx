@@ -1,8 +1,17 @@
 import Link from "next/link";
-import type { Viewer } from "@/lib/types";
+import type { Viewer, PriceSnapshot } from "@/lib/types";
 import { logoutAction } from "@/app/login/actions";
+import { VersionSelector } from "@/components/VersionSelector";
 
-export function PublicHeader({ viewer }: { viewer: Viewer }) {
+type Props = {
+  viewer: Viewer;
+  snapshot?: PriceSnapshot | null;
+  availableSnapshots?: PriceSnapshot[];
+};
+
+export function PublicHeader({ viewer, snapshot, availableSnapshots = [] }: Props) {
+  const canSeeVersions =
+    viewer.kind !== "public" && availableSnapshots.length > 0;
   return (
     <>
       {viewer.kind === "preview" && (
@@ -44,6 +53,26 @@ export function PublicHeader({ viewer }: { viewer: Viewer }) {
         </div>
       )}
 
+      {snapshot && (
+        <div
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 50,
+            background: "#1C1C1C",
+            color: "white",
+            padding: "8px 20px",
+            fontFamily: "var(--font-noto), sans-serif",
+            fontSize: 12,
+            fontWeight: 700,
+            textAlign: "center",
+          }}
+        >
+          📅 Estás viendo la versión histórica <strong>{snapshot.name}</strong>
+          {snapshot.effective_date && ` · ${snapshot.effective_date}`}
+        </div>
+      )}
+
       <div
         style={{
           position: "absolute",
@@ -56,6 +85,12 @@ export function PublicHeader({ viewer }: { viewer: Viewer }) {
           fontFamily: "var(--font-noto), sans-serif",
         }}
       >
+        {canSeeVersions && (
+          <VersionSelector
+            snapshots={availableSnapshots}
+            current={snapshot?.id ?? null}
+          />
+        )}
         {viewer.kind === "public" && (
           <Link
             href="/login"
