@@ -12,6 +12,83 @@ type Props = {
 export function PublicHeader({ viewer, snapshot, availableSnapshots = [] }: Props) {
   const canSeeVersions =
     viewer.kind !== "public" && availableSnapshots.length > 0;
+  const isLoggedIn = viewer.kind !== "public";
+
+  // When a snapshot is active, render a full sticky bar that contains BOTH
+  // the indicator and the controls — otherwise the absolute-positioned
+  // controls get hidden behind the bar.
+  if (snapshot) {
+    return (
+      <div
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 50,
+          background: "#1C1C1C",
+          color: "white",
+          padding: "8px 16px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          flexWrap: "wrap",
+          fontFamily: "var(--font-noto), sans-serif",
+          fontSize: 12,
+          fontWeight: 700,
+          boxShadow: "0 1px 4px rgba(0,0,0,.2)",
+        }}
+      >
+        <span style={{ minWidth: 0 }}>
+          📅 Viendo versión histórica <strong>{snapshot.name}</strong>
+          {snapshot.effective_date && (
+            <span style={{ opacity: 0.7 }}> · {snapshot.effective_date}</span>
+          )}
+        </span>
+        <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          {canSeeVersions && (
+            <VersionSelector snapshots={availableSnapshots} current={snapshot.id} />
+          )}
+          {viewer.kind === "admin" && (
+            <Link
+              href="/admin"
+              style={{
+                background: "rgba(255,255,255,.15)",
+                color: "white",
+                padding: "5px 12px",
+                borderRadius: 999,
+                textDecoration: "none",
+                fontSize: 12,
+                fontWeight: 700,
+              }}
+            >
+              ← Admin
+            </Link>
+          )}
+          {isLoggedIn && (
+            <form action={logoutAction} style={{ display: "inline-flex" }}>
+              <button
+                type="submit"
+                style={{
+                  background: "rgba(255,255,255,.15)",
+                  color: "white",
+                  padding: "5px 12px",
+                  borderRadius: 999,
+                  border: 0,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+              >
+                Salir
+              </button>
+            </form>
+          )}
+        </span>
+      </div>
+    );
+  }
+
   return (
     <>
       {viewer.kind === "preview" && (
@@ -53,26 +130,6 @@ export function PublicHeader({ viewer, snapshot, availableSnapshots = [] }: Prop
         </div>
       )}
 
-      {snapshot && (
-        <div
-          style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 50,
-            background: "#1C1C1C",
-            color: "white",
-            padding: "8px 20px",
-            fontFamily: "var(--font-noto), sans-serif",
-            fontSize: 12,
-            fontWeight: 700,
-            textAlign: "center",
-          }}
-        >
-          📅 Estás viendo la versión histórica <strong>{snapshot.name}</strong>
-          {snapshot.effective_date && ` · ${snapshot.effective_date}`}
-        </div>
-      )}
-
       <div
         style={{
           position: "absolute",
@@ -82,14 +139,13 @@ export function PublicHeader({ viewer, snapshot, availableSnapshots = [] }: Prop
           display: "flex",
           gap: 8,
           alignItems: "center",
+          flexWrap: "wrap",
+          justifyContent: "flex-end",
           fontFamily: "var(--font-noto), sans-serif",
         }}
       >
         {canSeeVersions && (
-          <VersionSelector
-            snapshots={availableSnapshots}
-            current={snapshot?.id ?? null}
-          />
+          <VersionSelector snapshots={availableSnapshots} current={null} />
         )}
         {viewer.kind === "public" && (
           <Link
@@ -118,22 +174,20 @@ export function PublicHeader({ viewer, snapshot, availableSnapshots = [] }: Prop
         )}
 
         {viewer.kind === "admin" && (
-          <>
-            <Link
-              href="/admin"
-              style={{
-                background: "rgba(28,28,28,.9)",
-                color: "white",
-                padding: "7px 14px",
-                borderRadius: 999,
-                textDecoration: "none",
-                fontSize: 12,
-                fontWeight: 700,
-              }}
-            >
-              ← Panel admin
-            </Link>
-          </>
+          <Link
+            href="/admin"
+            style={{
+              background: "rgba(28,28,28,.9)",
+              color: "white",
+              padding: "7px 14px",
+              borderRadius: 999,
+              textDecoration: "none",
+              fontSize: 12,
+              fontWeight: 700,
+            }}
+          >
+            ← Panel admin
+          </Link>
         )}
 
         {viewer.kind !== "public" && viewer.kind !== "preview" && (
@@ -149,6 +203,7 @@ export function PublicHeader({ viewer, snapshot, availableSnapshots = [] }: Prop
                 fontSize: 12,
                 fontWeight: 700,
                 cursor: "pointer",
+                fontFamily: "inherit",
               }}
             >
               Salir
