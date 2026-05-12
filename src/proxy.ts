@@ -1,8 +1,17 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+// Routes that need server-side auth verification at the proxy level.
+// Other routes (e.g. "/") delegate auth to the page itself, saving an auth.getUser call.
+function needsAuthCheck(pathname: string): boolean {
+  return pathname.startsWith("/admin") || pathname === "/login";
+}
+
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
+
+  const pathname = request.nextUrl.pathname;
+  if (!needsAuthCheck(pathname)) return response;
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return response;
 
@@ -29,7 +38,6 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const pathname = request.nextUrl.pathname;
   const isAdminRoute = pathname.startsWith("/admin");
   const isLoginRoute = pathname === "/login";
 
@@ -41,7 +49,6 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Check role; only admins can access /admin/*
     const { data: profile } = await supabase
       .from("profiles")
       .select("role, active")
