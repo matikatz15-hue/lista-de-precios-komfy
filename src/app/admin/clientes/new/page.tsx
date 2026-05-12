@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { createClientAction } from "../actions";
+import { BackLink } from "@/components/BackLink";
+import { SubmitButton } from "@/components/SubmitButton";
 
 type Props = { searchParams: Promise<{ error?: string }> };
 
@@ -8,6 +10,7 @@ export default async function NewClientPage({ searchParams }: Props) {
 
   return (
     <div className="max-w-xl">
+      <BackLink href="/admin/clientes" label="Volver a Clientes" />
       <nav className="text-sm text-zinc-500 mb-2">
         <Link href="/admin/clientes" className="hover:text-zinc-700">
           Clientes
@@ -29,12 +32,12 @@ export default async function NewClientPage({ searchParams }: Props) {
           </div>
         )}
         <div className="flex justify-end">
-          <button
-            type="submit"
+          <SubmitButton
+            pendingText="Creando…"
             className="px-5 py-2 bg-[#0047BB] hover:bg-[#003691] text-white font-semibold text-sm rounded-md"
           >
             Crear cliente
-          </button>
+          </SubmitButton>
         </div>
       </form>
     </div>

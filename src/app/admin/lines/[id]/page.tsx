@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { updateLineAction, deleteLineAction } from "../actions";
 import { createGroupAction } from "../../groups/actions";
 import { SubmitButton } from "@/components/SubmitButton";
+import { BackLink } from "@/components/BackLink";
 import type { Line, ProductGroup, Product } from "@/lib/types";
 import { getPublicImageUrl } from "@/lib/storage";
 
@@ -36,6 +37,7 @@ export default async function LineDetailPage({ params, searchParams }: PageProps
 
   return (
     <div>
+      <BackLink href="/admin/lines" label="Volver a Líneas" />
       <nav className="text-sm text-zinc-500 mb-2">
         <Link href="/admin/lines" className="hover:text-zinc-700">
           Líneas

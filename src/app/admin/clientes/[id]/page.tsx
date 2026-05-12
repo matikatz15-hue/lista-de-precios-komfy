@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile, Discount, Line, Product } from "@/lib/types";
 import { SubmitButton } from "@/components/SubmitButton";
+import { BackLink } from "@/components/BackLink";
 import {
   updateClientAction,
   resetPasswordAction,
@@ -49,6 +50,7 @@ export default async function ClientDetailPage({ params, searchParams }: Props) 
 
   return (
     <div>
+      <BackLink href="/admin/clientes" label="Volver a Clientes" />
       <nav className="text-sm text-zinc-500 mb-2">
         <Link href="/admin/clientes" className="hover:text-zinc-700">
           Clientes
