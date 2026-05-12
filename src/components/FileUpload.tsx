@@ -7,6 +7,7 @@ type Props = {
   currentImageUrl?: string | null;
   accept?: string;
   helperText?: string;
+  recommendedSize?: string;
 };
 
 export function FileUpload({
@@ -14,6 +15,7 @@ export function FileUpload({
   currentImageUrl,
   accept = "image/*",
   helperText,
+  recommendedSize = "400 × 400 px (cuadrada)",
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(currentImageUrl ?? null);
@@ -108,6 +110,9 @@ export function FileUpload({
                   ? "Lista para guardar"
                   : "Click o arrastrá otra para reemplazar"}
               </div>
+              <div className="text-[10px] text-zinc-400 mt-0.5 uppercase tracking-wider font-semibold">
+                Recomendado: {recommendedSize}
+              </div>
             </div>
             {hasNewFile ? (
               <button
@@ -142,7 +147,10 @@ export function FileUpload({
             <div className="font-semibold text-sm text-zinc-900 mb-1">
               Seleccionar foto o arrastrarla aquí
             </div>
-            <div className="text-xs text-zinc-500">JPG, PNG, WebP (recomendado &lt; 1 MB)</div>
+            <div className="text-xs text-zinc-500 mb-1">JPG, PNG, WebP — máx 1 MB</div>
+            <div className="text-[10px] text-[#0047BB] uppercase tracking-wider font-bold">
+              Tamaño recomendado: {recommendedSize}
+            </div>
             <div className="inline-block mt-4 px-4 py-2 bg-[#0047BB] hover:bg-[#003691] text-white font-semibold text-sm rounded-md">
               Elegir archivo
             </div>
