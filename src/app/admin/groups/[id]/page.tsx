@@ -8,6 +8,7 @@ import { SubmitButton } from "@/components/SubmitButton";
 import { BackLink } from "@/components/BackLink";
 import { FileUpload } from "@/components/FileUpload";
 import { PriceInput } from "@/components/PriceInput";
+import { ColorPicker, type ColorOption } from "@/components/ColorPicker";
 import { ProductEditRow } from "./ProductEditRow";
 import type { ProductGroup, Product, Line } from "@/lib/types";
 
@@ -21,9 +22,13 @@ export default async function GroupDetailPage({ params, searchParams }: PageProp
   const { saved } = await searchParams;
   const supabase = await createClient();
 
-  const [groupRes, productsRes] = await Promise.all([
+  const [groupRes, productsRes, colorPaletteRes] = await Promise.all([
     supabase.from("product_groups").select("*, lines (*)").eq("id", id).single(),
     supabase.from("products").select("*").eq("product_group_id", id).order("sort_order"),
+    supabase
+      .from("products")
+      .select("color_name, color_hex, color_hex_secondary")
+      .order("color_name"),
   ]);
 
   if (groupRes.error || !groupRes.data) notFound();
@@ -31,6 +36,21 @@ export default async function GroupDetailPage({ params, searchParams }: PageProp
   const group = groupRes.data as ProductGroup & { lines: Line };
   const products = (productsRes.data ?? []) as Product[];
   const thumbUrl = group.thumbnail_path ? getPublicImageUrl(group.thumbnail_path) : null;
+
+  // Distinct color palette across the whole catalog
+  const colorMap = new Map<string, ColorOption>();
+  for (const cp of colorPaletteRes.data ?? []) {
+    const c = cp as { color_name: string; color_hex: string; color_hex_secondary: string | null };
+    const key = `${c.color_name}__${c.color_hex}__${c.color_hex_secondary ?? ""}`;
+    if (!colorMap.has(key)) {
+      colorMap.set(key, {
+        name: c.color_name,
+        hex: c.color_hex,
+        hex2: c.color_hex_secondary,
+      });
+    }
+  }
+  const palette = Array.from(colorMap.values());
 
   return (
     <div>
@@ -122,6 +142,7 @@ export default async function GroupDetailPage({ params, searchParams }: PageProp
                     key={p.id}
                     product={p}
                     groupId={group.id}
+                    palette={palette}
                     siblings={products
                       .filter((s) => s.id !== p.id)
                       .map((s) => ({ id: s.id, price: Number(s.price) }))}
@@ -144,14 +165,12 @@ export default async function GroupDetailPage({ params, searchParams }: PageProp
               defaultValue={group.name}
             />
             <Field label="SKU" name="sku" required className="col-span-3" />
-            <Field label="Nombre del color" name="color_name" required className="col-span-3" />
-            <Field label="Hex color" name="color_hex" required placeholder="#1C1C1C" className="col-span-3" />
-            <Field
-              label="Hex secundario (opcional, p/ bicolor)"
-              name="color_hex_secondary"
-              placeholder="#B58A5E"
-              className="col-span-3"
-            />
+            <div className="col-span-6">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1.5 uppercase tracking-wider">
+                Color
+              </label>
+              <ColorPicker colors={palette} />
+            </div>
             <Field
               label="Medidas (An × La × Al)"
               name="dimensions"

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { SubmitButton } from "@/components/SubmitButton";
 import { PriceInput } from "@/components/PriceInput";
+import { ColorPicker, type ColorOption } from "@/components/ColorPicker";
 import { updateProductAction, deleteProductAction } from "../../products/actions";
 import { InlinePriceCell } from "./InlinePriceCell";
 import type { Product } from "@/lib/types";
@@ -13,9 +14,10 @@ type Props = {
   product: Product;
   groupId: string;
   siblings: Sibling[];
+  palette: ColorOption[];
 };
 
-export function ProductEditRow({ product: p, groupId, siblings }: Props) {
+export function ProductEditRow({ product: p, groupId, siblings, palette }: Props) {
   const [editing, setEditing] = useState(false);
 
   const swatchStyle: React.CSSProperties = p.color_hex_secondary
@@ -87,10 +89,18 @@ export function ProductEditRow({ product: p, groupId, siblings }: Props) {
               <form action={updateProductAction} className="grid grid-cols-2 gap-3">
                 <input type="hidden" name="id" value={p.id} />
                 <MiniField label="Nombre" name="name" defaultValue={p.name} className="col-span-2" />
-                <MiniField label="SKU" name="sku" defaultValue={p.sku} />
-                <MiniField label="Color" name="color_name" defaultValue={p.color_name} />
-                <MiniField label="Hex" name="color_hex" defaultValue={p.color_hex} />
-                <MiniField label="Hex 2 (bicolor)" name="color_hex_secondary" defaultValue={p.color_hex_secondary ?? ""} />
+                <MiniField label="SKU" name="sku" defaultValue={p.sku} className="col-span-2" />
+                <div className="col-span-2">
+                  <label className="block text-[10px] font-semibold text-zinc-500 mb-1 uppercase tracking-wider">
+                    Color
+                  </label>
+                  <ColorPicker
+                    colors={palette}
+                    defaultName={p.color_name}
+                    defaultHex={p.color_hex}
+                    defaultHex2={p.color_hex_secondary}
+                  />
+                </div>
                 <MiniField label="Medidas" name="dimensions" defaultValue={p.dimensions} className="col-span-2" />
                 <MiniField label="Bultos" name="packages" type="number" defaultValue={String(p.packages)} />
                 <div>
