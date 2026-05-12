@@ -7,6 +7,7 @@ import { getPublicImageUrl } from "@/lib/storage";
 import { SubmitButton } from "@/components/SubmitButton";
 import { BackLink } from "@/components/BackLink";
 import { FileUpload } from "@/components/FileUpload";
+import { PriceInput } from "@/components/PriceInput";
 import { ProductEditRow } from "./ProductEditRow";
 import type { ProductGroup, Product, Line } from "@/lib/types";
 
@@ -159,14 +160,12 @@ export default async function GroupDetailPage({ params, searchParams }: PageProp
               className="col-span-3"
             />
             <Field label="Bultos" name="packages" type="number" defaultValue="1" className="col-span-2" />
-            <Field
-              label="Precio (sin separadores)"
-              name="price"
-              type="number"
-              step="0.01"
-              required
-              className="col-span-2"
-            />
+            <div className="col-span-2">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1.5 uppercase tracking-wider">
+                Precio
+              </label>
+              <PriceInput name="price" required />
+            </div>
             <Field label="Orden" name="sort_order" type="number" defaultValue="0" className="col-span-2" />
             <div className="col-span-6 flex justify-end">
               <SubmitButton

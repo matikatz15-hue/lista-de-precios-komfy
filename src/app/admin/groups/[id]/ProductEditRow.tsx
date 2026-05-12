@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { SubmitButton } from "@/components/SubmitButton";
+import { PriceInput } from "@/components/PriceInput";
 import { updateProductAction, deleteProductAction } from "../../products/actions";
 import { InlinePriceCell } from "./InlinePriceCell";
 import type { Product } from "@/lib/types";
@@ -92,7 +93,12 @@ export function ProductEditRow({ product: p, groupId, siblings }: Props) {
                 <MiniField label="Hex 2 (bicolor)" name="color_hex_secondary" defaultValue={p.color_hex_secondary ?? ""} />
                 <MiniField label="Medidas" name="dimensions" defaultValue={p.dimensions} className="col-span-2" />
                 <MiniField label="Bultos" name="packages" type="number" defaultValue={String(p.packages)} />
-                <MiniField label="Precio" name="price" type="number" step="0.01" defaultValue={String(p.price)} />
+                <div>
+                  <label className="block text-[10px] font-semibold text-zinc-500 mb-1 uppercase tracking-wider">
+                    Precio
+                  </label>
+                  <PriceInput name="price" defaultValue={p.price} />
+                </div>
                 <MiniField label="Orden" name="sort_order" type="number" defaultValue={String(p.sort_order)} />
                 <label className="text-xs flex items-center gap-2 pt-1">
                   <input type="checkbox" name="active" defaultChecked={p.active} /> Activa

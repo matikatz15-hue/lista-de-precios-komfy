@@ -3,6 +3,7 @@
 import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { setProductPrice, applyPriceToGroup } from "../../products/actions";
+import { formatAR, formatInputAR, parseAR } from "@/lib/price-format";
 
 type SiblingPrice = { id: string; price: number };
 
@@ -17,37 +18,6 @@ type ConfirmPrompt = {
   newPrice: number;
   siblingsToUpdate: number;
 };
-
-function formatAR(n: number) {
-  return n.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-// Argentina-style number formatting while typing.
-// Accepts digits and one comma (decimal). Dots are only thousand separators (auto-added).
-function formatInputAR(raw: string): string {
-  // Strip everything except digits and commas
-  let cleaned = raw.replace(/[^\d,]/g, "");
-  // Allow only the first comma; remove later commas
-  const firstComma = cleaned.indexOf(",");
-  if (firstComma !== -1) {
-    cleaned = cleaned.slice(0, firstComma + 1) + cleaned.slice(firstComma + 1).replace(/,/g, "");
-  }
-  const [intPart = "", decPart] = cleaned.split(",");
-  // Strip leading zeros (but keep at least one)
-  const intTrimmed = intPart.replace(/^0+(?=\d)/, "");
-  // Add thousand dots
-  const intFormatted = intTrimmed.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  if (decPart !== undefined) {
-    return `${intFormatted || "0"},${decPart.slice(0, 2)}`;
-  }
-  return intFormatted;
-}
-
-function parseAR(formatted: string): number {
-  if (!formatted) return NaN;
-  const normalized = formatted.replace(/\./g, "").replace(",", ".");
-  return Number(normalized);
-}
 
 export function InlinePriceCell({ productId, groupId, currentPrice, siblings }: Props) {
   const router = useRouter();
