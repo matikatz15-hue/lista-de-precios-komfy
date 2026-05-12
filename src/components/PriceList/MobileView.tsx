@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { PricedLine, Settings, Condition, PricedGroup, PricedProduct } from "@/lib/types";
 import { KomfyLogo } from "@/components/KomfyLogo";
 import { ColorSwatch } from "@/components/ColorSwatch";
@@ -155,8 +156,7 @@ function MobileBlock({ group }: { group: PricedGroup }) {
       <div className={s.blockHead}>
         <div className={s.thumb}>
           {thumbUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={thumbUrl} alt={group.name} />
+            <Image src={thumbUrl} alt={group.name} width={108} height={108} sizes="54px" />
           ) : (
             <div className={s.thumbFallback}>{group.name.slice(0, 3)}</div>
           )}

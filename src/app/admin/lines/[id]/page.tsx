@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { updateLineAction, deleteLineAction } from "../actions";
@@ -138,8 +139,14 @@ export default async function LineDetailPage({ params, searchParams }: PageProps
                     <tr key={g.id} className="border-t border-zinc-100 hover:bg-zinc-50">
                       <td className="px-4 py-3">
                         {url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={url} alt="" className="w-10 h-10 rounded object-cover" />
+                          <Image
+                            src={url}
+                            alt={g.name}
+                            width={80}
+                            height={80}
+                            sizes="40px"
+                            className="w-10 h-10 rounded object-cover"
+                          />
                         ) : (
                           <div className="w-10 h-10 rounded bg-zinc-200" />
                         )}
