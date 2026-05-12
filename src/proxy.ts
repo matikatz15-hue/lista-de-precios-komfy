@@ -18,28 +18,6 @@ export async function proxy(request: NextRequest) {
   const isAdminRoute = pathname.startsWith("/admin");
   const isLoginRoute = pathname === "/login";
 
-  // Fast path: trust the role cookie set at login (no DB query, no auth.getUser).
-  // The cookie has an 8-hour TTL; the actual auth session is still validated
-  // by Supabase SSR via the supabase cookies on every server action / page render.
-  const cachedRole = request.cookies.get(ROLE_COOKIE)?.value;
-
-  if (cachedRole && isAdminRoute) {
-    if (cachedRole !== "admin") {
-      const url = request.nextUrl.clone();
-      url.pathname = "/";
-      return NextResponse.redirect(url);
-    }
-    // Admin role cached → allow without hitting Supabase
-    return response;
-  }
-
-  if (cachedRole && isLoginRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = cachedRole === "admin" ? "/admin" : "/";
-    return NextResponse.redirect(url);
-  }
-
-  // Slow path: no role cookie. Do the full check.
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -59,9 +37,13 @@ export async function proxy(request: NextRequest) {
     }
   );
 
+  // Always call getUser so Supabase SSR refreshes the access token.
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Role check: prefer the cached cookie (skips a DB roundtrip ~100-200ms per nav).
+  const cachedRole = request.cookies.get(ROLE_COOKIE)?.value;
 
   if (isAdminRoute) {
     if (!user) {
@@ -71,37 +53,46 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, active")
-      .eq("id", user.id)
-      .single();
+    let role = cachedRole;
+    if (role !== "admin" && role !== "client") {
+      // Cookie missing or unexpected value → check DB once and re-seed.
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role, active")
+        .eq("id", user.id)
+        .single();
+      if (!profile || !profile.active) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/";
+        return NextResponse.redirect(url);
+      }
+      role = profile.role;
+      response.cookies.set(ROLE_COOKIE, role, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 8,
+      });
+    }
 
-    if (!profile || profile.role !== "admin" || !profile.active) {
+    if (role !== "admin") {
       const url = request.nextUrl.clone();
       url.pathname = "/";
       return NextResponse.redirect(url);
     }
-
-    // Re-seed the role cookie so subsequent requests are fast.
-    response.cookies.set(ROLE_COOKIE, profile.role, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 8,
-    });
   }
 
   if (isLoginRoute && user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
+    const role =
+      cachedRole === "admin" || cachedRole === "client"
+        ? cachedRole
+        : (
+            await supabase.from("profiles").select("role").eq("id", user.id).single()
+          ).data?.role;
 
     const url = request.nextUrl.clone();
-    url.pathname = profile?.role === "admin" ? "/admin" : "/";
+    url.pathname = role === "admin" ? "/admin" : "/";
     return NextResponse.redirect(url);
   }
 
