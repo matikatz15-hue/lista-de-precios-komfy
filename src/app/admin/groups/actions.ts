@@ -54,6 +54,7 @@ export async function createGroupAction(formData: FormData) {
 
   revalidatePath(`/admin/lines/${line_id}`);
   invalidatePriceList();
+  redirect(`/admin/lines/${line_id}?saved=${encodeURIComponent("Grupo creado")}`);
 }
 
 export async function updateGroupAction(formData: FormData) {
@@ -87,6 +88,7 @@ export async function updateGroupAction(formData: FormData) {
 
   revalidatePath(`/admin/groups/${id}`);
   invalidatePriceList();
+  redirect(`/admin/groups/${id}?saved=${encodeURIComponent("Cambios guardados")}`);
 }
 
 export async function deleteGroupAction(formData: FormData) {

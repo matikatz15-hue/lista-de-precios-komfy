@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createLineAction } from "./actions";
+import { SubmitButton } from "@/components/SubmitButton";
 import type { Line } from "@/lib/types";
 
-export default async function LinesPage() {
+type Props = { searchParams: Promise<{ saved?: string }> };
+
+export default async function LinesPage({ searchParams }: Props) {
+  const { saved } = await searchParams;
   const supabase = await createClient();
   const { data } = await supabase.from("lines").select("*").order("sort_order");
   const lines = (data ?? []) as Line[];
@@ -16,6 +20,12 @@ export default async function LinesPage() {
           <p className="text-sm text-zinc-600 mt-1">Cada línea agrupa productos (MUK, BEL, AIRE...).</p>
         </div>
       </header>
+
+      {saved && (
+        <div className="mb-6 flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2">
+          <span>✓</span><span>{saved}</span>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl border border-zinc-200 mb-6 overflow-hidden">
         {lines.length === 0 ? (
@@ -104,12 +114,12 @@ export default async function LinesPage() {
             </select>
           </div>
           <div className="col-span-2 flex justify-end">
-            <button
-              type="submit"
+            <SubmitButton
+              pendingText="Creando…"
               className="px-5 py-2 bg-[#0047BB] hover:bg-[#003691] text-white font-semibold text-sm rounded-md"
             >
               Crear línea
-            </button>
+            </SubmitButton>
           </div>
         </form>
       </div>

@@ -39,6 +39,7 @@ export async function createLineAction(formData: FormData) {
 
   revalidatePath("/admin/lines");
   invalidatePriceList();
+  redirect(`/admin/lines?saved=${encodeURIComponent("Línea creada")}`);
 }
 
 export async function updateLineAction(formData: FormData) {
@@ -61,7 +62,8 @@ export async function updateLineAction(formData: FormData) {
 
   revalidatePath("/admin/lines");
   revalidatePath(`/admin/lines/${id}`);
-  revalidatePath("/");
+  invalidatePriceList();
+  redirect(`/admin/lines/${id}?saved=${encodeURIComponent("Cambios guardados")}`);
 }
 
 export async function deleteLineAction(formData: FormData) {
@@ -69,6 +71,6 @@ export async function deleteLineAction(formData: FormData) {
   const id = String(formData.get("id"));
   await supabase.from("lines").delete().eq("id", id);
   revalidatePath("/admin/lines");
-  revalidatePath("/");
-  redirect("/admin/lines");
+  invalidatePriceList();
+  redirect(`/admin/lines?saved=${encodeURIComponent("Línea eliminada")}`);
 }

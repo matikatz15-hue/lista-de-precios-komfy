@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile, Discount, Line, Product } from "@/lib/types";
+import { SubmitButton } from "@/components/SubmitButton";
 import {
   updateClientAction,
   resetPasswordAction,
@@ -97,19 +98,19 @@ export default async function ClientDetailPage({ params, searchParams }: Props) 
             Cliente activo (puede entrar al sistema)
           </label>
           <div className="col-span-2 flex justify-between">
-            <button
-              type="submit"
+            <SubmitButton
               formAction={deleteClientAction}
+              pendingText="Eliminando…"
               className="text-red-600 hover:text-red-700 text-sm font-semibold"
             >
               Eliminar cliente
-            </button>
-            <button
-              type="submit"
+            </SubmitButton>
+            <SubmitButton
+              pendingText="Guardando…"
               className="px-4 py-2 bg-[#0047BB] hover:bg-[#003691] text-white font-semibold text-sm rounded-md"
             >
               Guardar
-            </button>
+            </SubmitButton>
           </div>
         </form>
       </section>

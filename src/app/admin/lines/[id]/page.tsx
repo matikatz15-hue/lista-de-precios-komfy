@@ -3,11 +3,18 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { updateLineAction, deleteLineAction } from "../actions";
 import { createGroupAction } from "../../groups/actions";
+import { SubmitButton } from "@/components/SubmitButton";
 import type { Line, ProductGroup, Product } from "@/lib/types";
 import { getPublicImageUrl } from "@/lib/storage";
 
-export default async function LineDetailPage({ params }: { params: Promise<{ id: string }> }) {
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ saved?: string }>;
+};
+
+export default async function LineDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const { saved } = await searchParams;
   const supabase = await createClient();
 
   const [lineRes, groupsRes, productCountRes] = await Promise.all([
@@ -36,6 +43,12 @@ export default async function LineDetailPage({ params }: { params: Promise<{ id:
         / <span className="text-zinc-900 font-semibold">{line.name}</span>
       </nav>
       <h1 className="text-3xl font-bold text-zinc-900 mb-8">Editar línea</h1>
+
+      {saved && (
+        <div className="mb-6 flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2">
+          <span>✓</span><span>{saved}</span>
+        </div>
+      )}
 
       <section className="bg-white rounded-xl border border-zinc-200 p-6 mb-8">
         <h2 className="font-semibold mb-4">Datos de la línea</h2>
@@ -77,19 +90,19 @@ export default async function LineDetailPage({ params }: { params: Promise<{ id:
             Línea activa (visible en la lista pública)
           </label>
           <div className="col-span-2 flex justify-between items-center">
-            <button
-              type="submit"
+            <SubmitButton
               formAction={deleteLineAction}
+              pendingText="Eliminando…"
               className="text-red-600 hover:text-red-700 text-sm font-semibold"
             >
               Eliminar línea
-            </button>
-            <button
-              type="submit"
+            </SubmitButton>
+            <SubmitButton
+              pendingText="Guardando…"
               className="px-5 py-2 bg-[#0047BB] hover:bg-[#003691] text-white font-semibold text-sm rounded-md"
             >
               Guardar cambios
-            </button>
+            </SubmitButton>
           </div>
         </form>
       </section>
@@ -167,12 +180,12 @@ export default async function LineDetailPage({ params }: { params: Promise<{ id:
               />
             </div>
             <div className="col-span-2 flex justify-end">
-              <button
-                type="submit"
+              <SubmitButton
+                pendingText="Creando…"
                 className="px-5 py-2 bg-[#0047BB] hover:bg-[#003691] text-white font-semibold text-sm rounded-md"
               >
                 Crear grupo
-              </button>
+              </SubmitButton>
             </div>
           </form>
         </div>

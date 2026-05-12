@@ -4,10 +4,17 @@ import { createClient } from "@/lib/supabase/server";
 import { updateGroupAction, deleteGroupAction } from "../actions";
 import { createProductAction, updateProductAction, deleteProductAction } from "../../products/actions";
 import { getPublicImageUrl } from "@/lib/storage";
+import { SubmitButton } from "@/components/SubmitButton";
 import type { ProductGroup, Product, Line } from "@/lib/types";
 
-export default async function GroupDetailPage({ params }: { params: Promise<{ id: string }> }) {
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ saved?: string }>;
+};
+
+export default async function GroupDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const { saved } = await searchParams;
   const supabase = await createClient();
 
   const [groupRes, productsRes] = await Promise.all([
@@ -35,6 +42,13 @@ export default async function GroupDetailPage({ params }: { params: Promise<{ id
       </nav>
       <h1 className="text-3xl font-bold text-zinc-900 mb-8">Editar grupo</h1>
 
+      {saved && (
+        <div className="mb-6 flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2">
+          <span>✓</span>
+          <span>{saved}</span>
+        </div>
+      )}
+
       <section className="bg-white rounded-xl border border-zinc-200 p-6 mb-8">
         <h2 className="font-semibold mb-4">Datos del grupo</h2>
         <form action={updateGroupAction} className="grid grid-cols-2 gap-4">
@@ -59,19 +73,19 @@ export default async function GroupDetailPage({ params }: { params: Promise<{ id
             <p className="text-xs text-zinc-500 mt-1">Dejá vacío para mantener la actual.</p>
           </div>
           <div className="col-span-2 flex justify-between items-center">
-            <button
-              type="submit"
+            <SubmitButton
               formAction={deleteGroupAction}
+              pendingText="Eliminando…"
               className="text-red-600 hover:text-red-700 text-sm font-semibold"
             >
               Eliminar grupo
-            </button>
-            <button
-              type="submit"
+            </SubmitButton>
+            <SubmitButton
+              pendingText="Guardando…"
               className="px-5 py-2 bg-[#0047BB] hover:bg-[#003691] text-white font-semibold text-sm rounded-md"
             >
               Guardar cambios
-            </button>
+            </SubmitButton>
           </div>
         </form>
       </section>
@@ -145,12 +159,12 @@ export default async function GroupDetailPage({ params }: { params: Promise<{ id
             />
             <Field label="Orden" name="sort_order" type="number" defaultValue="0" className="col-span-2" />
             <div className="col-span-6 flex justify-end">
-              <button
-                type="submit"
+              <SubmitButton
+                pendingText="Agregando…"
                 className="px-5 py-2 bg-[#0047BB] hover:bg-[#003691] text-white font-semibold text-sm rounded-md"
               >
                 Agregar variante
-              </button>
+              </SubmitButton>
             </div>
           </form>
         </div>
@@ -204,19 +218,19 @@ function ProductRow({ product: p }: { product: Product }) {
                 <input type="checkbox" name="active" defaultChecked={p.active} /> Activa
               </label>
               <div className="col-span-2 flex justify-between items-center pt-2">
-                <button
-                  type="submit"
+                <SubmitButton
                   formAction={deleteProductAction}
+                  pendingText="Eliminando…"
                   className="text-red-600 text-xs font-semibold"
                 >
                   Eliminar
-                </button>
-                <button
-                  type="submit"
+                </SubmitButton>
+                <SubmitButton
+                  pendingText="Guardando…"
                   className="px-3 py-1.5 bg-[#0047BB] text-white font-semibold text-xs rounded-md"
                 >
                   Guardar
-                </button>
+                </SubmitButton>
               </div>
             </form>
           </div>

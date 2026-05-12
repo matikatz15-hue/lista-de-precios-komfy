@@ -8,10 +8,11 @@ import { invalidatePriceList } from "@/lib/cache";
 export async function createProductAction(formData: FormData) {
   const supabase = await createClient();
   const product_group_id = String(formData.get("product_group_id"));
+  const name = String(formData.get("name") ?? "").trim();
 
   await supabase.from("products").insert({
     product_group_id,
-    name: String(formData.get("name") ?? "").trim(),
+    name,
     sku: String(formData.get("sku") ?? "").trim(),
     color_name: String(formData.get("color_name") ?? "").trim(),
     color_hex: String(formData.get("color_hex") ?? "#999999").trim(),
@@ -25,6 +26,7 @@ export async function createProductAction(formData: FormData) {
 
   revalidatePath(`/admin/groups/${product_group_id}`);
   invalidatePriceList();
+  redirect(`/admin/groups/${product_group_id}?saved=${encodeURIComponent("Variante agregada")}`);
 }
 
 export async function updateProductAction(formData: FormData) {
@@ -55,6 +57,9 @@ export async function updateProductAction(formData: FormData) {
 
   if (existing?.product_group_id) revalidatePath(`/admin/groups/${existing.product_group_id}`);
   invalidatePriceList();
+  if (existing?.product_group_id) {
+    redirect(`/admin/groups/${existing.product_group_id}?saved=${encodeURIComponent("Cambios guardados")}`);
+  }
 }
 
 export async function deleteProductAction(formData: FormData) {

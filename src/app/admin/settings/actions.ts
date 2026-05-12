@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { invalidatePriceList } from "@/lib/cache";
 import type { Condition } from "@/lib/types";
@@ -40,4 +41,5 @@ export async function updateSettingsAction(formData: FormData) {
 
   revalidatePath("/admin/settings");
   invalidatePriceList();
+  redirect(`/admin/settings?saved=${encodeURIComponent("Settings guardados")}`);
 }

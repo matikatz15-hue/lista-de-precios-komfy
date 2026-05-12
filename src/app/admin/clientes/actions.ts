@@ -74,6 +74,7 @@ export async function updateClientAction(formData: FormData) {
 
   revalidatePath(`/admin/clientes/${id}`);
   revalidatePath("/admin/clientes");
+  redirect(`/admin/clientes/${id}?msg=${encodeURIComponent("Datos guardados")}`);
 }
 
 export async function resetPasswordAction(formData: FormData) {
@@ -124,6 +125,7 @@ export async function upsertGeneralDiscountAction(formData: FormData) {
 
   revalidatePath(`/admin/clientes/${client_id}`);
   invalidatePriceList();
+  redirect(`/admin/clientes/${client_id}?msg=${encodeURIComponent("Descuento guardado")}`);
 }
 
 export async function upsertLineDiscountAction(formData: FormData) {
@@ -154,6 +156,7 @@ export async function upsertLineDiscountAction(formData: FormData) {
 
   revalidatePath(`/admin/clientes/${client_id}`);
   invalidatePriceList();
+  redirect(`/admin/clientes/${client_id}?msg=${encodeURIComponent("Descuento guardado")}`);
 }
 
 export async function addProductDiscountAction(formData: FormData) {
@@ -180,6 +183,7 @@ export async function addProductDiscountAction(formData: FormData) {
 
   revalidatePath(`/admin/clientes/${client_id}`);
   invalidatePriceList();
+  redirect(`/admin/clientes/${client_id}?msg=${encodeURIComponent("Descuento guardado")}`);
 }
 
 export async function deleteDiscountAction(formData: FormData) {
@@ -190,4 +194,5 @@ export async function deleteDiscountAction(formData: FormData) {
   await supabase.from("discounts").delete().eq("id", id);
   revalidatePath(`/admin/clientes/${client_id}`);
   invalidatePriceList();
+  redirect(`/admin/clientes/${client_id}?msg=${encodeURIComponent("Descuento guardado")}`);
 }

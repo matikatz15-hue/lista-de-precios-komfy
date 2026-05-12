@@ -1,8 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { updateSettingsAction } from "./actions";
+import { SubmitButton } from "@/components/SubmitButton";
 import type { Settings } from "@/lib/types";
 
-export default async function SettingsPage() {
+type Props = { searchParams: Promise<{ saved?: string }> };
+
+export default async function SettingsPage({ searchParams }: Props) {
+  const { saved } = await searchParams;
   const supabase = await createClient();
   const { data } = await supabase.from("settings").select("*").eq("id", 1).single();
   const settings = (data ?? {}) as Partial<Settings>;
@@ -12,6 +16,12 @@ export default async function SettingsPage() {
     <div>
       <h1 className="text-3xl font-bold text-zinc-900 mb-2">Settings</h1>
       <p className="text-sm text-zinc-600 mb-8">Datos generales que aparecen en tapa, intro, footer y condiciones.</p>
+
+      {saved && (
+        <div className="mb-6 flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2">
+          <span>✓</span><span>{saved}</span>
+        </div>
+      )}
 
       <form action={updateSettingsAction} className="space-y-6">
         <Section title="Tapa y vigencia">
@@ -72,12 +82,12 @@ export default async function SettingsPage() {
         </Section>
 
         <div className="flex justify-end">
-          <button
-            type="submit"
+          <SubmitButton
+            pendingText="Guardando…"
             className="px-5 py-2.5 bg-[#0047BB] hover:bg-[#003691] text-white font-semibold text-sm rounded-md"
           >
             Guardar settings
-          </button>
+          </SubmitButton>
         </div>
       </form>
     </div>
