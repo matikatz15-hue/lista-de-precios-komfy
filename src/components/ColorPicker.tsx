@@ -217,45 +217,28 @@ function EditColorModal({
               className="w-full px-3 py-2 border border-zinc-300 rounded-md text-sm"
             />
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1 uppercase tracking-wider">
-                Hex principal
-              </label>
-              <div className="flex items-stretch gap-1">
-                <input
-                  type="color"
-                  value={hex}
-                  onChange={(e) => setHex(e.target.value)}
-                  className="w-12 h-10 p-1 border border-zinc-300 rounded-md cursor-pointer"
-                />
-                <input
-                  value={hex}
-                  onChange={(e) => setHex(e.target.value)}
-                  placeholder="#1C1C1C"
-                  className="flex-1 px-3 py-2 border border-zinc-300 rounded-md text-sm font-mono"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1 uppercase tracking-wider">
-                Hex 2 (bicolor)
-              </label>
-              <div className="flex items-stretch gap-1">
-                <input
-                  type="color"
-                  value={hex2 || "#ffffff"}
-                  onChange={(e) => setHex2(e.target.value)}
-                  className="w-12 h-10 p-1 border border-zinc-300 rounded-md cursor-pointer"
-                />
-                <input
-                  value={hex2}
-                  onChange={(e) => setHex2(e.target.value)}
-                  placeholder="(opcional)"
-                  className="flex-1 px-3 py-2 border border-zinc-300 rounded-md text-sm font-mono"
-                />
-              </div>
-            </div>
+          <div className="grid grid-cols-2 gap-3">
+            <HexField label="Hex principal" value={hex} onChange={setHex} />
+            <HexField
+              label="Hex 2 (bicolor)"
+              value={hex2}
+              onChange={setHex2}
+              placeholder="(opcional)"
+            />
+          </div>
+          <div className="mt-3 flex items-center gap-3 p-3 bg-zinc-50 rounded-md border border-zinc-200">
+            <span className="text-xs font-semibold text-zinc-600 uppercase tracking-wider">
+              Vista previa
+            </span>
+            <span
+              className="w-10 h-10 rounded-full border border-black/15 flex-shrink-0"
+              style={
+                hex2
+                  ? { background: `linear-gradient(135deg, ${hex} 50%, ${hex2} 50%)` }
+                  : { background: hex }
+              }
+            />
+            <span className="text-sm text-zinc-700 truncate">{name || "—"}</span>
           </div>
         </div>
 
@@ -292,6 +275,53 @@ function EditColorModal({
         </div>
       </div>
     </>
+  );
+}
+
+function HexField({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  const isValid = !value || /^#[0-9a-fA-F]{6}$/.test(value);
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-zinc-700 mb-1 uppercase tracking-wider">
+        {label}
+      </label>
+      <div
+        className={`flex items-stretch overflow-hidden border rounded-md ${
+          isValid ? "border-zinc-300" : "border-red-400"
+        }`}
+      >
+        <label className="relative w-11 h-10 cursor-pointer flex-shrink-0 border-r border-zinc-200">
+          <span
+            className="block w-full h-full"
+            style={{ background: value || "#ffffff" }}
+          />
+          <input
+            type="color"
+            value={/^#[0-9a-fA-F]{6}$/.test(value) ? value : "#ffffff"}
+            onChange={(e) => onChange(e.target.value)}
+            className="absolute inset-0 opacity-0 cursor-pointer"
+            aria-label={label}
+          />
+        </label>
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder ?? "#1C1C1C"}
+          className="flex-1 px-3 py-2 text-sm font-mono outline-none bg-white"
+        />
+      </div>
+    </div>
   );
 }
 
