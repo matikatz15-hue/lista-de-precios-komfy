@@ -3,6 +3,7 @@ import { DesktopView } from "@/components/PriceList/DesktopView";
 import { MobileView } from "@/components/PriceList/MobileView";
 import { PublicHeader } from "@/components/PublicHeader";
 
+export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ preview?: string }> };
