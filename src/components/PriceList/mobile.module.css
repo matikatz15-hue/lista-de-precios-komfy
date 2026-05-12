@@ -404,6 +404,36 @@
   color: var(--azul);
   margin-top: 2px;
 }
+.varName {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--negro);
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.varSubline {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  color: var(--gris);
+  margin-top: 3px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.varSubline .varSep {
+  color: var(--gris-2);
+}
+.varCodeInline {
+  font-family: var(--font-barlow);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--azul);
+}
 .varRight {
   text-align: right;
   display: flex;

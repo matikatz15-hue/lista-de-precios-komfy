@@ -216,21 +216,35 @@ function MobileBlock({ group }: { group: PricedGroup }) {
         </div>
       </div>
       {group.products.map((p) => (
-        <MobileVariant key={p.id} product={p} />
+        <MobileVariant key={p.id} product={p} groupName={group.name} />
       ))}
     </div>
   );
 }
 
-function MobileVariant({ product: p }: { product: PricedProduct }) {
+function MobileVariant({ product: p, groupName }: { product: PricedProduct; groupName: string }) {
   const hasDiscount = p.discountPercent !== null && p.discountPercent !== 0;
+  const showProductName = p.name.trim() !== groupName.trim();
   return (
     <div className={s.var}>
       <div className={s.varLeft}>
         <ColorSwatch hex={p.color_hex} hexSecondary={p.color_hex_secondary} className={s.swatch} size={18} />
         <div className={s.varInfo}>
-          <div className={s.varColor}>{p.color_name}</div>
-          <div className={s.varCode}>{p.sku}</div>
+          {showProductName ? (
+            <>
+              <div className={s.varName}>{p.name}</div>
+              <div className={s.varSubline}>
+                <span>{p.color_name}</span>
+                <span className={s.varSep}>·</span>
+                <span className={s.varCodeInline}>{p.sku}</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className={s.varColor}>{p.color_name}</div>
+              <div className={s.varCode}>{p.sku}</div>
+            </>
+          )}
         </div>
       </div>
       <div className={s.varRight}>
