@@ -6,6 +6,7 @@ import { createProductAction } from "../../products/actions";
 import { getPublicImageUrl } from "@/lib/storage";
 import { SubmitButton } from "@/components/SubmitButton";
 import { BackLink } from "@/components/BackLink";
+import { FileUpload } from "@/components/FileUpload";
 import { ProductEditRow } from "./ProductEditRow";
 import type { ProductGroup, Product, Line } from "@/lib/types";
 
@@ -68,12 +69,11 @@ export default async function GroupDetailPage({ params, searchParams }: PageProp
             <label className="block text-xs font-semibold text-zinc-700 mb-1.5 uppercase tracking-wider">
               Foto del grupo
             </label>
-            {thumbUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={thumbUrl} alt="" className="w-24 h-24 rounded-lg object-cover mb-3" />
-            )}
-            <input type="file" name="thumbnail" accept="image/*" className="block text-sm" />
-            <p className="text-xs text-zinc-500 mt-1">Dejá vacío para mantener la actual.</p>
+            <FileUpload
+              name="thumbnail"
+              currentImageUrl={thumbUrl}
+              helperText="Si no querés cambiar la foto, dejá este campo como está."
+            />
           </div>
           <div className="col-span-2 flex justify-between items-center">
             <SubmitButton

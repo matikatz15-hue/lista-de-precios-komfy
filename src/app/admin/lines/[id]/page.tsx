@@ -5,6 +5,7 @@ import { updateLineAction, deleteLineAction } from "../actions";
 import { createGroupAction } from "../../groups/actions";
 import { SubmitButton } from "@/components/SubmitButton";
 import { BackLink } from "@/components/BackLink";
+import { FileUpload } from "@/components/FileUpload";
 import type { Line, ProductGroup, Product } from "@/lib/types";
 import { getPublicImageUrl } from "@/lib/storage";
 
@@ -174,12 +175,7 @@ export default async function LineDetailPage({ params, searchParams }: PageProps
               <label className="block text-xs font-semibold text-zinc-700 mb-1.5 uppercase tracking-wider">
                 Foto del grupo
               </label>
-              <input
-                type="file"
-                name="thumbnail"
-                accept="image/*"
-                className="block text-sm"
-              />
+              <FileUpload name="thumbnail" />
             </div>
             <div className="col-span-2 flex justify-end">
               <SubmitButton
