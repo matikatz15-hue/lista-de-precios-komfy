@@ -43,10 +43,12 @@ function Cover({ settings }: { settings: Settings }) {
         <p className={s.coverSub}>{settings.cover_subtitle ?? "Catálogo mayorista de muebles Komfy. Precios netos, sin IVA."}</p>
       </div>
       <div className={s.coverFoot}>
-        <div>
-          <div className={s.k}>Vigencia</div>
-          <div className={s.v}>{formatDate(settings.effective_date)}</div>
-        </div>
+        {settings.effective_date && (
+          <div>
+            <div className={s.k}>Vigencia</div>
+            <div className={s.v}>{formatDate(settings.effective_date)}</div>
+          </div>
+        )}
         {settings.contact_phone && (
           <div>
             <div className={s.k}>Teléfono</div>

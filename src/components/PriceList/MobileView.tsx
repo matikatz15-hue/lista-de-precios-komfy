@@ -64,10 +64,12 @@ function MobileCover({ settings }: { settings: Settings }) {
       </h1>
       <p className={s.heroSub}>{settings.cover_subtitle ?? "Catálogo mayorista de muebles Komfy. Precios netos, sin IVA."}</p>
       <div className={s.coverMeta}>
-        <div>
-          <div className={s.k}>Vigencia</div>
-          <div className={s.v}>{formatDate(settings.effective_date)}</div>
-        </div>
+        {settings.effective_date && (
+          <div>
+            <div className={s.k}>Vigencia</div>
+            <div className={s.v}>{formatDate(settings.effective_date)}</div>
+          </div>
+        )}
         {settings.contact_email && (
           <div>
             <div className={s.k}>Contacto</div>

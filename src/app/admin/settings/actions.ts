@@ -18,13 +18,10 @@ export async function updateSettingsAction(formData: FormData) {
     // ignore invalid JSON, keep empty
   }
 
-  const effective_date_raw = String(formData.get("effective_date") ?? "").trim();
-
   await supabase
     .from("settings")
     .update({
       period_label: String(formData.get("period_label") ?? "").trim() || null,
-      effective_date: effective_date_raw || null,
       contact_email: String(formData.get("contact_email") ?? "").trim() || null,
       contact_phone: String(formData.get("contact_phone") ?? "").trim() || null,
       whatsapp: String(formData.get("whatsapp") ?? "").trim() || null,

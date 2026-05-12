@@ -24,10 +24,12 @@ export default async function SettingsPage({ searchParams }: Props) {
       )}
 
       <form action={updateSettingsAction} className="space-y-6">
-        <Section title="Tapa y vigencia">
-          <Field label="Etiqueta de período (ej: Mayorista · Marzo 2026)" name="period_label" defaultValue={settings.period_label ?? ""} className="col-span-2" />
-          <Field label="Fecha de vigencia" name="effective_date" type="date" defaultValue={settings.effective_date ?? ""} />
+        <Section title="Tapa">
+          <Field label="Etiqueta de período (ej: Mayorista)" name="period_label" defaultValue={settings.period_label ?? ""} className="col-span-2" />
           <Field label="Subtítulo de tapa" name="cover_subtitle" defaultValue={settings.cover_subtitle ?? ""} className="col-span-2" />
+          <p className="col-span-2 text-xs text-zinc-500">
+            La fecha de vigencia se toma del snapshot que estés viendo (cuando es una versión histórica). En la vista actual no aparece fecha.
+          </p>
         </Section>
 
         <Section title="Contacto">
