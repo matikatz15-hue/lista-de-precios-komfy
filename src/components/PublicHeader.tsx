@@ -9,6 +9,41 @@ type Props = {
   availableSnapshots?: PriceSnapshot[];
 };
 
+function exportHref(snapshotId?: string | null, previewClientId?: string | null) {
+  const params = new URLSearchParams();
+  if (snapshotId) params.set("version", snapshotId);
+  if (previewClientId) params.set("preview", previewClientId);
+  const qs = params.toString();
+  return qs ? `/export?${qs}` : "/export";
+}
+
+const downloadPillStyleLight: React.CSSProperties = {
+  background: "rgba(255,255,255,.95)",
+  color: "#0047BB",
+  padding: "7px 12px",
+  borderRadius: 999,
+  textDecoration: "none",
+  fontSize: 12,
+  fontWeight: 700,
+  border: "1px solid rgba(0,0,0,.08)",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 4,
+};
+
+const downloadPillStyleDark: React.CSSProperties = {
+  background: "rgba(255,255,255,.15)",
+  color: "white",
+  padding: "5px 12px",
+  borderRadius: 999,
+  textDecoration: "none",
+  fontSize: 12,
+  fontWeight: 700,
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 4,
+};
+
 export function PublicHeader({ viewer, snapshot, availableSnapshots = [] }: Props) {
   const canSeeVersions =
     viewer.kind !== "public" && availableSnapshots.length > 0;
@@ -45,6 +80,9 @@ export function PublicHeader({ viewer, snapshot, availableSnapshots = [] }: Prop
           )}
         </span>
         <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <a href={exportHref(snapshot.id)} style={downloadPillStyleDark} download>
+            ↓ CSV
+          </a>
           {canSeeVersions && (
             <VersionSelector snapshots={availableSnapshots} current={snapshot.id} />
           )}
@@ -144,6 +182,9 @@ export function PublicHeader({ viewer, snapshot, availableSnapshots = [] }: Prop
           fontFamily: "var(--font-noto), sans-serif",
         }}
       >
+        <a href={exportHref()} style={downloadPillStyleLight} download>
+          ↓ CSV
+        </a>
         {canSeeVersions && (
           <VersionSelector snapshots={availableSnapshots} current={null} />
         )}
