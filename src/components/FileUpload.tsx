@@ -15,7 +15,7 @@ export function FileUpload({
   currentImageUrl,
   accept = "image/*",
   helperText,
-  recommendedSize = "400 × 400 px (cuadrada)",
+  recommendedSize = "200 × 200 px (cuadrada)",
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(currentImageUrl ?? null);
