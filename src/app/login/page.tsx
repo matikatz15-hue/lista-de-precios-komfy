@@ -1,5 +1,6 @@
 import { loginAction } from "./actions";
 import { PasswordInput } from "@/components/PasswordInput";
+import { SubmitButton } from "@/components/SubmitButton";
 
 type Props = { searchParams: Promise<{ error?: string; redirect_to?: string }> };
 
@@ -68,8 +69,8 @@ export default async function LoginPage({ searchParams }: Props) {
               {error}
             </div>
           )}
-          <button
-            type="submit"
+          <SubmitButton
+            pendingText="Iniciando sesión…"
             style={{
               background: "#0047BB",
               color: "white",
@@ -80,10 +81,11 @@ export default async function LoginPage({ searchParams }: Props) {
               cursor: "pointer",
               fontSize: 14,
               marginTop: 4,
+              fontFamily: "inherit",
             }}
           >
             Entrar
-          </button>
+          </SubmitButton>
           <p style={{ fontSize: 11, color: "#9ca3af", textAlign: "center", margin: "8px 0 0" }}>
             El navegador te va a ofrecer guardar tu usuario y contraseña la primera vez.
           </p>
