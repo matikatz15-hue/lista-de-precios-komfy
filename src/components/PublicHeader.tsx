@@ -90,7 +90,7 @@ export function PublicHeader({ viewer, snapshot, availableSnapshots = [] }: Prop
               rel="noopener noreferrer"
               style={downloadPillStyleDark}
             >
-              🖼 Multimedia
+              📷 Multimedia
             </a>
           )}
           <a href={exportHref(snapshot.id)} style={downloadPillStyleDark} download>
@@ -202,7 +202,7 @@ export function PublicHeader({ viewer, snapshot, availableSnapshots = [] }: Prop
             rel="noopener noreferrer"
             style={downloadPillStyleLight}
           >
-            🖼 Multimedia
+            📷 Multimedia
           </a>
         )}
         <a href={exportHref()} style={downloadPillStyleLight} download>
