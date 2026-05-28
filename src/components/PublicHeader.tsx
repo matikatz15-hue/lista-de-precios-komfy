@@ -9,6 +9,9 @@ type Props = {
   availableSnapshots?: PriceSnapshot[];
 };
 
+const MEDIA_FOLDER_URL =
+  "https://drive.google.com/drive/folders/1CTx0z4gTwR7pXZq6nae9WQLK80nxDn8K?usp=sharing";
+
 function exportHref(snapshotId?: string | null, previewClientId?: string | null) {
   const params = new URLSearchParams();
   if (snapshotId) params.set("version", snapshotId);
@@ -80,6 +83,16 @@ export function PublicHeader({ viewer, snapshot, availableSnapshots = [] }: Prop
           )}
         </span>
         <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          {isLoggedIn && (
+            <a
+              href={MEDIA_FOLDER_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={downloadPillStyleDark}
+            >
+              🖼 Multimedia
+            </a>
+          )}
           <a href={exportHref(snapshot.id)} style={downloadPillStyleDark} download>
             ↓ CSV
           </a>
@@ -182,6 +195,16 @@ export function PublicHeader({ viewer, snapshot, availableSnapshots = [] }: Prop
           fontFamily: "var(--font-noto), sans-serif",
         }}
       >
+        {isLoggedIn && (
+          <a
+            href={MEDIA_FOLDER_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={downloadPillStyleLight}
+          >
+            🖼 Multimedia
+          </a>
+        )}
         <a href={exportHref()} style={downloadPillStyleLight} download>
           ↓ CSV
         </a>
