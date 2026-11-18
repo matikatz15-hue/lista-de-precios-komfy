@@ -213,6 +213,8 @@ export async function revisarWebAction() {
   });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) volver({ error: `No se pudo revisar la web: ${j.error ?? r.status}` });
+  // si actualizó nombres/fotos/medidas de lo publicado, que la lista pública lo muestre ya
+  invalidatePriceList();
   revalidatePath("/admin", "layout");
   const n = j.resumen?.pendientes_nuevos ?? 0;
   volver({ saved: n ? `Listo: ${n} color${n > 1 ? "es" : ""} nuevo${n > 1 ? "s" : ""} de la web.` : "Listo: no hay nada nuevo en la web." });
