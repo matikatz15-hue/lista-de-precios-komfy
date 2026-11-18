@@ -1,12 +1,18 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { logoutAction } from "@/app/login/actions";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // The proxy already validated the role + auth; we just read the email from a
   // lightweight cookie set elsewhere or fall back gracefully.
   const cookieStore = await cookies();
   const emailCookie = cookieStore.get("kf_email")?.value ?? "";
+  const supabase = await createClient();
+  const { count: nuevos } = await supabase
+    .from("web_pendientes")
+    .select("tn_variant_id", { count: "exact", head: true })
+    .eq("estado", "pendiente");
 
   return (
     <div className="min-h-screen bg-zinc-50">
@@ -17,6 +23,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <div className="text-xs text-zinc-500 mt-1 truncate">{emailCookie || "admin"}</div>
           </div>
           <NavLink href="/admin">Dashboard</NavLink>
+          <NavLink href="/admin/nuevos">
+            <span className="flex items-center justify-between">
+              Nuevos de la web
+              {nuevos ? (
+                <span className="ml-2 rounded-full bg-orange-500 px-2 py-0.5 text-[11px] font-bold text-white">{nuevos}</span>
+              ) : null}
+            </span>
+          </NavLink>
           <NavLink href="/admin/lines">Líneas</NavLink>
           <NavLink href="/admin/precios">Precios</NavLink>
           <NavLink href="/admin/snapshots">Historial</NavLink>

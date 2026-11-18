@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
         hostname: SUPABASE_HOSTNAME,
         pathname: "/storage/v1/object/public/**",
       },
+      // Fotos que vienen de la web (Tienda Nube)
+      { protocol: "https", hostname: "**.mitiendanube.com" },
     ],
     // Limit the variants Vercel generates (saves transformation quota).
     deviceSizes: [54, 96, 108, 162, 200, 400],
