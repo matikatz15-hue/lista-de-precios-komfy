@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { invalidatePriceList } from "@/lib/cache";
+import { requireEditor } from "@/lib/roles";
 
 function slugify(s: string) {
   return s
@@ -15,6 +16,7 @@ function slugify(s: string) {
 }
 
 export async function createLineAction(formData: FormData) {
+  await requireEditor();
   const supabase = await createClient();
   const name = String(formData.get("name") ?? "").trim();
   const number = Number(formData.get("number") ?? 1);
@@ -43,6 +45,7 @@ export async function createLineAction(formData: FormData) {
 }
 
 export async function updateLineAction(formData: FormData) {
+  await requireEditor();
   const supabase = await createClient();
   const id = String(formData.get("id"));
   await supabase
@@ -67,6 +70,7 @@ export async function updateLineAction(formData: FormData) {
 }
 
 export async function deleteLineAction(formData: FormData) {
+  await requireEditor();
   const supabase = await createClient();
   const id = String(formData.get("id"));
   await supabase.from("lines").delete().eq("id", id);

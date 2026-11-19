@@ -4,9 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { invalidatePriceList } from "@/lib/cache";
+import { requireEditor } from "@/lib/roles";
 
 async function uploadThumbnail(file: File, groupId: string): Promise<string | null> {
   if (!file || file.size === 0) return null;
+  await requireEditor();
   const supabase = await createClient();
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
   const path = `groups/${groupId}/${Date.now()}.${ext}`;
@@ -24,11 +26,13 @@ async function uploadThumbnail(file: File, groupId: string): Promise<string | nu
 
 async function deleteThumbnail(path: string | null) {
   if (!path) return;
+  await requireEditor();
   const supabase = await createClient();
   await supabase.storage.from("products").remove([path]);
 }
 
 export async function createGroupAction(formData: FormData) {
+  await requireEditor();
   const supabase = await createClient();
   const line_id = String(formData.get("line_id"));
   const name = String(formData.get("name") ?? "").trim();
@@ -58,6 +62,7 @@ export async function createGroupAction(formData: FormData) {
 }
 
 export async function updateGroupAction(formData: FormData) {
+  await requireEditor();
   const supabase = await createClient();
   const id = String(formData.get("id"));
   const name = String(formData.get("name") ?? "").trim();
@@ -92,6 +97,7 @@ export async function updateGroupAction(formData: FormData) {
 }
 
 export async function deleteGroupAction(formData: FormData) {
+  await requireEditor();
   const supabase = await createClient();
   const id = String(formData.get("id"));
 

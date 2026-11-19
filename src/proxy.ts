@@ -54,7 +54,7 @@ export async function proxy(request: NextRequest) {
     }
 
     let role: string | undefined = cachedRole;
-    if (role !== "admin" && role !== "client") {
+    if (role !== "admin" && role !== "client" && role !== "viewer") {
       // Cookie missing or unexpected value → check DB once and re-seed.
       const { data: profile } = await supabase
         .from("profiles")
@@ -76,7 +76,8 @@ export async function proxy(request: NextRequest) {
       });
     }
 
-    if (role !== "admin") {
+    // admin edita; viewer (equipo Komfy) entra a mirar. Las escrituras las frena RLS + requireEditor().
+    if (role !== "admin" && role !== "viewer") {
       const url = request.nextUrl.clone();
       url.pathname = "/";
       return NextResponse.redirect(url);
@@ -85,14 +86,14 @@ export async function proxy(request: NextRequest) {
 
   if (isLoginRoute && user) {
     const role =
-      cachedRole === "admin" || cachedRole === "client"
+      cachedRole === "admin" || cachedRole === "client" || cachedRole === "viewer"
         ? cachedRole
         : (
             await supabase.from("profiles").select("role").eq("id", user.id).single()
           ).data?.role;
 
     const url = request.nextUrl.clone();
-    url.pathname = role === "admin" ? "/admin" : "/";
+    url.pathname = role === "admin" || role === "viewer" ? "/admin" : "/";
     return NextResponse.redirect(url);
   }
 

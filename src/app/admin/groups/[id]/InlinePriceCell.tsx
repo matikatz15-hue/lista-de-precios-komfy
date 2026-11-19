@@ -4,6 +4,7 @@ import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { setProductPrice, applyPriceToGroup } from "../../products/actions";
 import { formatAR, formatInputAR, parseAR } from "@/lib/price-format";
+import { useReadOnly } from "@/components/ReadOnly";
 
 type SiblingPrice = { id: string; price: number };
 
@@ -27,6 +28,7 @@ export function InlinePriceCell({ productId, groupId, currentPrice, siblings }: 
   const [error, setError] = useState<string | null>(null);
   const [confirmPrompt, setConfirmPrompt] = useState<ConfirmPrompt | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const readOnly = useReadOnly();
 
   useEffect(() => {
     if (editing && inputRef.current) {
@@ -36,6 +38,7 @@ export function InlinePriceCell({ productId, groupId, currentPrice, siblings }: 
   }, [editing]);
 
   function startEdit() {
+    if (readOnly) return;
     setInputValue(formatAR(currentPrice));
     setEditing(true);
     setError(null);
@@ -64,7 +67,7 @@ export function InlinePriceCell({ productId, groupId, currentPrice, siblings }: 
   }
 
   function applyOnlyThis() {
-    if (!confirmPrompt) return;
+    if (!confirmPrompt || readOnly) return;
     const { newPrice } = confirmPrompt;
     setConfirmPrompt(null);
     startTransition(async () => {
@@ -78,7 +81,7 @@ export function InlinePriceCell({ productId, groupId, currentPrice, siblings }: 
   }
 
   function applyAll() {
-    if (!confirmPrompt) return;
+    if (!confirmPrompt || readOnly) return;
     const { newPrice } = confirmPrompt;
     setConfirmPrompt(null);
     startTransition(async () => {
@@ -116,7 +119,7 @@ export function InlinePriceCell({ productId, groupId, currentPrice, siblings }: 
           className={`font-mono font-semibold text-right inline-block px-2 py-1 rounded hover:bg-blue-50 hover:ring-1 hover:ring-blue-200 cursor-text transition-colors ${
             pending ? "opacity-60" : ""
           }`}
-          title="Click para editar"
+          title={readOnly ? undefined : "Click para editar"}
         >
           ${formatAR(currentPrice)}
         </button>

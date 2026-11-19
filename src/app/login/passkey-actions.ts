@@ -78,10 +78,10 @@ async function abrirSesion(userId: string, redirectTo: string): Promise<{ destin
   cookieStore.set("kf_email", email, opts);
 
   if (redirectTo.startsWith("/") && !redirectTo.startsWith("//")) {
-    if (redirectTo.startsWith("/admin") && profile.role !== "admin") return { destino: "/" };
+    if (redirectTo.startsWith("/admin") && profile.role !== "admin" && profile.role !== "viewer") return { destino: "/" };
     return { destino: redirectTo };
   }
-  return { destino: profile.role === "admin" ? "/admin" : "/" };
+  return { destino: profile.role === "admin" || profile.role === "viewer" ? "/admin" : "/" };
 }
 
 // ---------- Entrar con huella o cara ----------

@@ -3,6 +3,7 @@ import { ColorSwatch } from "@/components/ColorSwatch";
 import { SubmitButton } from "@/components/SubmitButton";
 import { formatPrice } from "@/lib/format";
 import { resolverAction, guardarAction, recuperarAction, revisarWebAction } from "./actions";
+import { requireEditor } from "@/lib/roles";
 
 type Fila = {
   tn_variant_id: string;
@@ -242,6 +243,7 @@ export default async function NuevosPage({ searchParams }: PageProps) {
 
 async function descartarAction(formData: FormData) {
   "use server";
+  await requireEditor();
   formData.set("accion", "descartar");
   return resolverAction(formData);
 }

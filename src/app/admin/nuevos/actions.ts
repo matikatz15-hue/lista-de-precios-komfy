@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { invalidatePriceList } from "@/lib/cache";
+import { motivoNoEditor } from "@/lib/roles";
 
 type Pendiente = {
   tn_variant_id: string;
@@ -29,7 +30,10 @@ function volver(msg: { saved?: string; error?: string }): never {
   redirect(`/admin/nuevos${q ? `?${q}` : ""}`);
 }
 
+// Todas las acciones de esta pantalla escriben: solo el admin (el equipo "viewer" solo mira).
 async function quien() {
+  const noEditor = await motivoNoEditor();
+  if (noEditor) volver({ error: noEditor });
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
   return { supabase, email: data.user?.email ?? "admin" };

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { logoutAction } from "@/app/login/actions";
 import { createClient } from "@/lib/supabase/server";
+import { rolDelPanel } from "@/lib/roles";
+import { ReadOnlyProvider } from "@/components/ReadOnly";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // The proxy already validated the role + auth; we just read the email from a
@@ -9,17 +11,22 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const cookieStore = await cookies();
   const emailCookie = cookieStore.get("kf_email")?.value ?? "";
   const supabase = await createClient();
-  const { count: nuevos } = await supabase
-    .from("web_pendientes")
-    .select("tn_variant_id", { count: "exact", head: true })
-    .eq("estado", "pendiente");
+  const [{ count: nuevos }, rol] = await Promise.all([
+    supabase.from("web_pendientes").select("tn_variant_id", { count: "exact", head: true }).eq("estado", "pendiente"),
+    rolDelPanel(),
+  ]);
+  // Equipo Komfy con rol "viewer": ve todo el admin pero no puede tocar nada.
+  // El fieldset deshabilita cada control; las escrituras igual las frenan requireEditor() + RLS.
+  const soloMira = rol !== "admin";
 
   return (
     <div className="min-h-screen bg-zinc-50">
       <div className="flex">
         <aside className="w-60 min-h-screen bg-white border-r border-zinc-200 p-4 flex flex-col gap-1">
           <div className="px-3 py-4 mb-2 border-b border-zinc-200">
-            <div className="text-xs font-bold tracking-widest text-orange-500 uppercase">Komfy Admin</div>
+            <div className="text-xs font-bold tracking-widest text-orange-500 uppercase">
+              {soloMira ? "Komfy · Equipo" : "Komfy Admin"}
+            </div>
             <div className="text-xs text-zinc-500 mt-1 truncate">{emailCookie || "admin"}</div>
           </div>
           <NavLink href="/admin">Dashboard</NavLink>
@@ -52,7 +59,25 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </button>
           </form>
         </aside>
-        <main className="flex-1 p-8 max-w-6xl">{children}</main>
+        <main className="flex-1 p-8 max-w-6xl">
+          {soloMira ? (
+            <>
+              <div
+                role="status"
+                className="mb-6 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-semibold text-orange-800"
+              >
+                👁 Solo mirás — los cambios se piden a Mati (komfy-users)
+              </div>
+              <ReadOnlyProvider value>
+                <fieldset disabled style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+                  {children}
+                </fieldset>
+              </ReadOnlyProvider>
+            </>
+          ) : (
+            children
+          )}
+        </main>
       </div>
     </div>
   );

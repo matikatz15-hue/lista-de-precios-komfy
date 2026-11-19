@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updatePaletteColor } from "@/app/admin/products/actions";
+import { useReadOnly } from "@/components/ReadOnly";
 
 export type ColorOption = {
   name: string;
@@ -39,6 +40,7 @@ export function ColorPicker({
   );
   const [idx, setIdx] = useState<number>(matched ? initialIdx : 0);
   const [editing, setEditing] = useState(false);
+  const readOnly = useReadOnly();
 
   const selected = colors[idx];
 
@@ -84,7 +86,7 @@ export function ColorPicker({
             </div>
             <button
               type="button"
-              onClick={() => setEditing(true)}
+              onClick={() => !readOnly && setEditing(true)}
               className="px-3 py-2 bg-white border border-zinc-300 text-zinc-700 hover:bg-zinc-50 text-xs font-semibold uppercase tracking-wider rounded-md whitespace-nowrap"
               title="Editar este color en todas las variantes que lo usan"
             >
@@ -93,7 +95,7 @@ export function ColorPicker({
           </div>
           <button
             type="button"
-            onClick={() => setMode("new")}
+            onClick={() => !readOnly && setMode("new")}
             className="text-xs font-semibold text-[#0047BB] hover:underline"
           >
             + Crear color nuevo
@@ -122,7 +124,7 @@ export function ColorPicker({
           />
           <button
             type="button"
-            onClick={() => setMode("existing")}
+            onClick={() => !readOnly && setMode("existing")}
             className="text-xs font-semibold text-zinc-600 hover:text-zinc-900 hover:underline"
           >
             ← Elegir uno existente
@@ -146,8 +148,10 @@ function EditColorModal({
   const [hex2, setHex2] = useState(color.hex2 ?? "");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const readOnly = useReadOnly();
 
   function save() {
+    if (readOnly) return;
     setError(null);
     startTransition(async () => {
       const res = await updatePaletteColor({

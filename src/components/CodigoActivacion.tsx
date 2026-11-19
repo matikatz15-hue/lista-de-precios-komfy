@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { generarCodigoAction } from "@/app/admin/clientes/codigo-actions";
+import { useReadOnly } from "@/components/ReadOnly";
 
 const URL_LOGIN = "https://lista-de-precios-komfy.vercel.app/login";
 
@@ -11,8 +12,10 @@ export function CodigoActivacion({ userId, email }: { userId: string; email: str
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
   const [copiado, setCopiado] = useState(false);
+  const readOnly = useReadOnly();
 
   async function generar() {
+    if (readOnly) return;
     setError(null);
     setCopiado(false);
     setCargando(true);

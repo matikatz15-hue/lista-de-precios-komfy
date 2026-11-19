@@ -2,6 +2,7 @@ import { loginAction } from "./actions";
 import { PasswordInput } from "@/components/PasswordInput";
 import { SubmitButton } from "@/components/SubmitButton";
 import { PasskeyLogin } from "@/components/PasskeyLogin";
+import { KomfyIdLogin } from "@/components/KomfyIdLogin";
 
 type Props = { searchParams: Promise<{ error?: string; redirect_to?: string }> };
 
@@ -92,6 +93,7 @@ export default async function LoginPage({ searchParams }: Props) {
           </p>
         </form>
         <PasskeyLogin redirectTo={redirect_to} />
+        <KomfyIdLogin redirectTo={redirect_to} />
       </div>
     </div>
   );

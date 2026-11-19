@@ -51,13 +51,13 @@ export async function loginAction(formData: FormData) {
   });
 
   if (redirectTo && redirectTo.startsWith("/")) {
-    if (redirectTo.startsWith("/admin") && profile.role !== "admin") {
+    if (redirectTo.startsWith("/admin") && profile.role !== "admin" && profile.role !== "viewer") {
       redirect("/");
     }
     redirect(redirectTo);
   }
 
-  redirect(profile.role === "admin" ? "/admin" : "/");
+  redirect(profile.role === "admin" || profile.role === "viewer" ? "/admin" : "/");
 }
 
 export async function logoutAction() {

@@ -85,7 +85,7 @@ export async function getPriceList(opts?: {
         .single();
       const profile = profileData as Profile | null;
       if (profile) {
-        if (profile.role === "admin") {
+        if (profile.role === "admin" || profile.role === "viewer") {
           if (opts?.previewClientId) {
             const { data: clientData } = await supabase
               .from("profiles")

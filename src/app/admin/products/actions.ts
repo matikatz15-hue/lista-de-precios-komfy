@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { invalidatePriceList } from "@/lib/cache";
+import { motivoNoEditor, requireEditor } from "@/lib/roles";
 
 // Inline price update — used by the Excel-style cell.
 // Returns the group id so the client can decide whether to prompt propagation.
@@ -14,6 +15,8 @@ export async function setProductPrice(
   if (!productId || !Number.isFinite(newPrice) || newPrice < 0) {
     return { ok: false, error: "Precio inválido" };
   }
+  const noEditor = await motivoNoEditor();
+  if (noEditor) return { ok: false, error: noEditor };
   const supabase = await createClient();
   const { data: existing, error: fetchErr } = await supabase
     .from("products")
@@ -47,6 +50,8 @@ export async function updatePaletteColor(args: {
   if (!newName.trim() || !/^#[0-9a-fA-F]{3,8}$/.test(newHex)) {
     return { ok: false, error: "Datos inválidos" };
   }
+  const noEditor = await motivoNoEditor();
+  if (noEditor) return { ok: false, error: noEditor };
   const supabase = await createClient();
 
   // Find affected rows first so we can report a count and revalidate by group
@@ -95,6 +100,8 @@ export async function applyPriceToGroup(
   if (!groupId || !Number.isFinite(newPrice) || newPrice < 0) {
     return { ok: false, error: "Datos inválidos" };
   }
+  const noEditor = await motivoNoEditor();
+  if (noEditor) return { ok: false, error: noEditor };
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("products")
@@ -114,6 +121,7 @@ function describeError(error: { code?: string; message: string }, sku: string) {
 }
 
 export async function createProductAction(formData: FormData) {
+  await requireEditor();
   const supabase = await createClient();
   const product_group_id = String(formData.get("product_group_id"));
   const name = String(formData.get("name") ?? "").trim();
@@ -145,6 +153,7 @@ export async function createProductAction(formData: FormData) {
 }
 
 export async function updateProductAction(formData: FormData) {
+  await requireEditor();
   const supabase = await createClient();
   const id = String(formData.get("id"));
   const sku = String(formData.get("sku") ?? "").trim();
@@ -185,6 +194,7 @@ export async function updateProductAction(formData: FormData) {
 }
 
 export async function deleteProductAction(formData: FormData) {
+  await requireEditor();
   const supabase = await createClient();
   const id = String(formData.get("id"));
 

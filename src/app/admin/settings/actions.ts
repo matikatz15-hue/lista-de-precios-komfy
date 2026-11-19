@@ -4,9 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { invalidatePriceList } from "@/lib/cache";
+import { requireEditor } from "@/lib/roles";
 import type { Condition } from "@/lib/types";
 
 export async function updateSettingsAction(formData: FormData) {
+  await requireEditor();
   const supabase = await createClient();
 
   let conditions: Condition[] = [];

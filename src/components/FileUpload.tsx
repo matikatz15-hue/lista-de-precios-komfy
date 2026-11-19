@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useReadOnly } from "@/components/ReadOnly";
 
 type Props = {
   name: string;
@@ -22,12 +23,13 @@ export function FileUpload({
   const [fileName, setFileName] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [removed, setRemoved] = useState(false);
+  const readOnly = useReadOnly();
 
   const hasNewFile = !!fileName;
   const hasExistingPhoto = !!currentImageUrl && !removed && !hasNewFile;
 
   function handleFile(file: File | undefined) {
-    if (!file) return;
+    if (!file || readOnly) return;
     setFileName(file.name);
     setRemoved(false);
     const reader = new FileReader();
@@ -46,7 +48,7 @@ export function FileUpload({
     e.stopPropagation();
     setDragActive(false);
     const file = e.dataTransfer.files?.[0];
-    if (!file) return;
+    if (!file || readOnly) return;
     // Manually set the file on the input so the form submits it
     if (inputRef.current) {
       const dt = new DataTransfer();
@@ -70,11 +72,11 @@ export function FileUpload({
         onDragOver={handleDrag}
         onDragLeave={handleDrag}
         onDrop={handleDrop}
-        onClick={() => inputRef.current?.click()}
+        onClick={() => !readOnly && inputRef.current?.click()}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
+          if (!readOnly && (e.key === "Enter" || e.key === " ")) inputRef.current?.click();
         }}
         className={`relative border-2 border-dashed rounded-xl cursor-pointer transition-all ${
           dragActive
