@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { Profile, Discount, Line, Product } from "@/lib/types";
 import { SubmitButton } from "@/components/SubmitButton";
 import { BackLink } from "@/components/BackLink";
+import { CodigoActivacion } from "@/components/CodigoActivacion";
 import {
   updateClientAction,
   resetPasswordAction,
@@ -128,7 +129,9 @@ export default async function ClientDetailPage({ params, searchParams }: Props) 
       <section className="bg-white rounded-xl border border-zinc-200 p-6 mb-6">
         <h2 className="font-semibold mb-1">Huella o cara</h2>
         <p className="text-sm text-zinc-500 mb-4">
-          El cliente la activa solo, después de entrar con su contraseña. Si pierde el celu, borrala acá.
+          Generá un código y mandáselo: lo pone en el login («Tengo un código para este dispositivo») y activa su huella o
+          cara. Dura 1 hora y sirve una vez; para otro dispositivo, otro código. Si pierde el celu, borralo acá. La
+          contraseña, si tiene, sigue andando.
         </p>
         {llaves?.length ? (
           <ul className="divide-y divide-zinc-100">
@@ -154,6 +157,7 @@ export default async function ClientDetailPage({ params, searchParams }: Props) 
         ) : (
           <p className="text-sm text-zinc-400">Todavía no la activó en ningún dispositivo.</p>
         )}
+        <CodigoActivacion userId={profile.id} email={profile.email} />
       </section>
 
       {/* Reset password */}

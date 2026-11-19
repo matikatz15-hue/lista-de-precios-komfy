@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { CodigoActivacion } from "@/components/CodigoActivacion";
 import type { Profile, Discount } from "@/lib/types";
 
 export default async function ClientesPage() {
@@ -15,6 +17,10 @@ export default async function ClientesPage() {
   ]);
 
   const profiles = (profilesRes.data ?? []) as Profile[];
+  const { data: yo } = await supabase.auth.getUser();
+  const { data: misLlaves } = yo.user
+    ? await createAdminClient().from("lp_passkeys").select("id, dispositivo").eq("user_id", yo.user.id)
+    : { data: [] };
   const discountCounts = new Map<string, number>();
   for (const d of (discountsRes.data ?? []) as Pick<Discount, "client_id">[]) {
     discountCounts.set(d.client_id, (discountCounts.get(d.client_id) ?? 0) + 1);
@@ -26,7 +32,7 @@ export default async function ClientesPage() {
         <div>
           <h1 className="text-3xl font-bold text-zinc-900">Clientes</h1>
           <p className="text-sm text-zinc-600 mt-1">
-            Cada cliente entra a /login con su email + contraseña y ve la lista con sus precios.
+            Cada cliente entra a /login con su contraseña o con su huella/cara (con el código que le generás en su ficha).
           </p>
         </div>
         <Link
@@ -36,6 +42,19 @@ export default async function ClientesPage() {
           + Nuevo cliente
         </Link>
       </header>
+
+      {yo.user && (
+        <section className="bg-white rounded-xl border border-zinc-200 p-5 mb-6">
+          <h2 className="font-semibold">Tu huella o cara (admin)</h2>
+          <p className="text-sm text-zinc-500 mt-1">
+            {misLlaves?.length
+              ? `Activada en: ${misLlaves.map((l) => l.dispositivo ?? "Dispositivo").join(", ")}.`
+              : "Todavía no la activaste en ningún dispositivo."}{" "}
+            Generá un código y usalo en el login de tu celu o compu.
+          </p>
+          <CodigoActivacion userId={yo.user.id} email={yo.user.email ?? ""} />
+        </section>
+      )}
 
       <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
         {profiles.length === 0 ? (

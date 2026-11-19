@@ -25,11 +25,12 @@ export async function createClientAction(formData: FormData) {
   const admin = createAdminClient();
 
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const password = String(formData.get("password") ?? "");
+  // Sin contraseña = el cliente entra solo con huella/cara (se le pasa un código).
+  const password = String(formData.get("password") ?? "") || `${crypto.randomUUID()}${crypto.randomUUID()}`;
   const full_name = String(formData.get("full_name") ?? "").trim();
 
-  if (!email || !password) {
-    redirect("/admin/clientes/new?error=email%20y%20password%20son%20obligatorios");
+  if (!email) {
+    redirect("/admin/clientes/new?error=el%20email%20es%20obligatorio");
   }
 
   const { data: created, error } = await admin.auth.admin.createUser({
@@ -56,7 +57,9 @@ export async function createClientAction(formData: FormData) {
   );
 
   revalidatePath("/admin/clientes");
-  redirect(`/admin/clientes/${created.user.id}`);
+  redirect(
+    `/admin/clientes/${created.user.id}?msg=${encodeURIComponent("Cliente creado. Generale el código de huella o cara (abajo) y mandáselo.")}`
+  );
 }
 
 export async function updateClientAction(formData: FormData) {

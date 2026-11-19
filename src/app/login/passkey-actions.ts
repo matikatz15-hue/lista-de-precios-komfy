@@ -15,12 +15,23 @@ import {
 import { isoBase64URL } from "@simplewebauthn/server/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { CHALLENGE_TTL_MS, ORIGIN, RP_ID, RP_NAME, nombreDispositivo } from "@/lib/passkeys";
+import {
+  CHALLENGE_TTL_MS,
+  CODIGO_MAX_INTENTOS,
+  ORIGIN,
+  RP_ID,
+  RP_NAME,
+  hashCodigo,
+  igualSeguro,
+  nombreDispositivo,
+  normalizarCodigo,
+} from "@/lib/passkeys";
 
 const ROLE_COOKIE_MAX_AGE = 60 * 60 * 8;
+type Tipo = "registro" | "ingreso";
 
 // Toma un desafío vigente y lo quema (un solo uso).
-async function tomarDesafio(id: string, tipo: "registro" | "ingreso", userId?: string) {
+async function tomarDesafio(id: string, tipo: Tipo, userId?: string) {
   const admin = createAdminClient();
   let q = admin
     .from("lp_challenges")
@@ -34,9 +45,8 @@ async function tomarDesafio(id: string, tipo: "registro" | "ingreso", userId?: s
   return data?.challenge ?? null;
 }
 
-async function guardarDesafio(challenge: string, tipo: "registro" | "ingreso", userId: string | null) {
+async function guardarDesafio(challenge: string, tipo: Tipo, userId: string | null) {
   const admin = createAdminClient();
-  // limpieza de desafíos viejos
   await admin.from("lp_challenges").delete().lt("created_at", new Date(Date.now() - 60 * 60 * 1000).toISOString());
   const { data, error } = await admin
     .from("lp_challenges")
@@ -47,17 +57,40 @@ async function guardarDesafio(challenge: string, tipo: "registro" | "ingreso", u
   return data.id as string;
 }
 
-// ---------- Entrar ----------
+// Abre la sesión de Supabase de esa persona (la misma que con contraseña) y devuelve a dónde ir.
+async function abrirSesion(userId: string, redirectTo: string): Promise<{ destino: string } | { error: string }> {
+  const admin = createAdminClient();
+  const { data: profile } = await admin.from("profiles").select("role, active").eq("id", userId).single();
+  if (!profile?.active) return { error: "Usuario desactivado. Contactá al admin." };
+  const { data: u } = await admin.auth.admin.getUserById(userId);
+  const email = u.user?.email;
+  if (!email) return { error: "No se pudo abrir la sesión." };
+
+  const { data: link, error: eLink } = await admin.auth.admin.generateLink({ type: "magiclink", email });
+  if (eLink || !link.properties?.hashed_token) return { error: "No se pudo abrir la sesión." };
+  const supabase = await createClient();
+  const { error: eOtp } = await supabase.auth.verifyOtp({ type: "magiclink", token_hash: link.properties.hashed_token });
+  if (eOtp) return { error: "No se pudo abrir la sesión." };
+
+  const cookieStore = await cookies();
+  const opts = { httpOnly: true, secure: true, sameSite: "lax" as const, path: "/", maxAge: ROLE_COOKIE_MAX_AGE };
+  cookieStore.set("kf_role", profile.role, opts);
+  cookieStore.set("kf_email", email, opts);
+
+  if (redirectTo.startsWith("/") && !redirectTo.startsWith("//")) {
+    if (redirectTo.startsWith("/admin") && profile.role !== "admin") return { destino: "/" };
+    return { destino: redirectTo };
+  }
+  return { destino: profile.role === "admin" ? "/admin" : "/" };
+}
+
+// ---------- Entrar con huella o cara ----------
 
 export async function opcionesIngreso(): Promise<
   { id: string; options: PublicKeyCredentialRequestOptionsJSON } | { error: string }
 > {
   try {
-    const options = await generateAuthenticationOptions({
-      rpID: RP_ID,
-      userVerification: "required",
-      timeout: 60000,
-    });
+    const options = await generateAuthenticationOptions({ rpID: RP_ID, userVerification: "required", timeout: 60000 });
     const id = await guardarDesafio(options.challenge, "ingreso", null);
     return { id, options };
   } catch {
@@ -70,7 +103,7 @@ export async function ingresarConPasskey(
   response: AuthenticationResponseJSON,
   redirectTo: string
 ): Promise<{ destino: string } | { error: string }> {
-  const fallo = { error: "No reconocimos esta huella o cara. Entrá con tu contraseña y activala de nuevo." };
+  const fallo = { error: "No reconocimos este dispositivo. Pedile a Komfy un código para activarlo." };
   const challenge = await tomarDesafio(id, "ingreso");
   if (!challenge) return { error: "Se venció el intento. Probá de nuevo." };
 
@@ -107,62 +140,58 @@ export async function ingresarConPasskey(
     .update({ counter: verificado.authenticationInfo.newCounter, last_used_at: new Date().toISOString() })
     .eq("id", llave.id);
 
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("role, active, email")
-    .eq("id", llave.user_id)
-    .single();
-  if (!profile?.active) return { error: "Usuario desactivado. Contactá al admin." };
-
-  const { data: u } = await admin.auth.admin.getUserById(llave.user_id);
-  const email = u.user?.email;
-  if (!email) return fallo;
-
-  // Abre la sesión de Supabase de esa persona (mismo login que con contraseña).
-  const { data: link, error: eLink } = await admin.auth.admin.generateLink({ type: "magiclink", email });
-  if (eLink || !link.properties?.hashed_token) return { error: "No se pudo abrir la sesión." };
-  const supabase = await createClient();
-  const { error: eOtp } = await supabase.auth.verifyOtp({
-    type: "magiclink",
-    token_hash: link.properties.hashed_token,
-  });
-  if (eOtp) return { error: "No se pudo abrir la sesión." };
-
-  const cookieStore = await cookies();
-  const opts = { httpOnly: true, secure: true, sameSite: "lax" as const, path: "/", maxAge: ROLE_COOKIE_MAX_AGE };
-  cookieStore.set("kf_role", profile.role, opts);
-  cookieStore.set("kf_email", email, opts);
-
-  if (redirectTo.startsWith("/") && !redirectTo.startsWith("//")) {
-    if (redirectTo.startsWith("/admin") && profile.role !== "admin") return { destino: "/" };
-    return { destino: redirectTo };
-  }
-  return { destino: profile.role === "admin" ? "/admin" : "/" };
+  return abrirSesion(llave.user_id, redirectTo);
 }
 
-// ---------- Activar en este dispositivo (ya logueado) ----------
+// ---------- Activar este dispositivo con el código que da el admin ----------
 
-export async function opcionesRegistro(): Promise<
-  { id: string; options: PublicKeyCredentialCreationOptionsJSON } | { error: string }
-> {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  const user = data.user;
-  if (!user?.email) return { error: "Tenés que entrar primero con tu contraseña." };
+const CODIGO_INVALIDO = "Email o código incorrecto, o el código ya venció. Pedile uno nuevo a Komfy.";
+
+// Chequea email + código. Si no coincide suma un intento; al 5º el código se anula.
+async function validarCodigo(email: string, codigo: string): Promise<string | null> {
+  const admin = createAdminClient();
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("id, active")
+    .eq("email", email.trim().toLowerCase())
+    .maybeSingle();
+  if (!profile?.active) return null;
+  const { data: c } = await admin.from("lp_codigos").select("hash, expira, intentos").eq("user_id", profile.id).maybeSingle();
+  if (!c) return null;
+  if (new Date(c.expira) < new Date() || c.intentos >= CODIGO_MAX_INTENTOS) {
+    await admin.from("lp_codigos").delete().eq("user_id", profile.id);
+    return null;
+  }
+  if (!igualSeguro(await hashCodigo(normalizarCodigo(codigo)), c.hash)) {
+    const n = c.intentos + 1;
+    if (n >= CODIGO_MAX_INTENTOS) await admin.from("lp_codigos").delete().eq("user_id", profile.id);
+    else await admin.from("lp_codigos").update({ intentos: n }).eq("user_id", profile.id);
+    return null;
+  }
+  return profile.id as string;
+}
+
+export async function opcionesActivacion(
+  email: string,
+  codigo: string
+): Promise<{ id: string; options: PublicKeyCredentialCreationOptionsJSON } | { error: string }> {
+  const userId = await validarCodigo(email, codigo);
+  if (!userId) return { error: CODIGO_INVALIDO };
 
   const admin = createAdminClient();
-  const [{ data: existentes }, { data: profile }] = await Promise.all([
-    admin.from("lp_passkeys").select("credential_id, transports").eq("user_id", user.id),
-    admin.from("profiles").select("full_name, active").eq("id", user.id).single(),
+  const [{ data: existentes }, { data: profile }, { data: u }] = await Promise.all([
+    admin.from("lp_passkeys").select("credential_id, transports").eq("user_id", userId),
+    admin.from("profiles").select("full_name").eq("id", userId).single(),
+    admin.auth.admin.getUserById(userId),
   ]);
-  if (!profile?.active) return { error: "Usuario desactivado." };
+  const mail = u.user?.email ?? email;
 
   const options = await generateRegistrationOptions({
     rpName: RP_NAME,
     rpID: RP_ID,
-    userName: user.email,
-    userDisplayName: profile.full_name || user.email,
-    userID: new TextEncoder().encode(user.id),
+    userName: mail,
+    userDisplayName: profile?.full_name || mail,
+    userID: new TextEncoder().encode(userId),
     attestationType: "none",
     authenticatorSelection: { residentKey: "required", userVerification: "required" },
     excludeCredentials: (existentes ?? []).map((e) => ({
@@ -171,20 +200,20 @@ export async function opcionesRegistro(): Promise<
     })),
     timeout: 60000,
   });
-  const id = await guardarDesafio(options.challenge, "registro", user.id);
+  const id = await guardarDesafio(options.challenge, "registro", userId);
   return { id, options };
 }
 
-export async function registrarPasskey(
+export async function activarConCodigo(
   id: string,
-  response: RegistrationResponseJSON
-): Promise<{ ok: true } | { error: string }> {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  const user = data.user;
-  if (!user) return { error: "Tenés que entrar primero con tu contraseña." };
-
-  const challenge = await tomarDesafio(id, "registro", user.id);
+  response: RegistrationResponseJSON,
+  email: string,
+  codigo: string,
+  redirectTo: string
+): Promise<{ destino: string } | { error: string }> {
+  const userId = await validarCodigo(email, codigo);
+  if (!userId) return { error: CODIGO_INVALIDO };
+  const challenge = await tomarDesafio(id, "registro", userId);
   if (!challenge) return { error: "Se venció el intento. Probá de nuevo." };
 
   let verificado;
@@ -205,7 +234,7 @@ export async function registrarPasskey(
   const ua = (await headers()).get("user-agent") ?? "";
   const admin = createAdminClient();
   const { error } = await admin.from("lp_passkeys").insert({
-    user_id: user.id,
+    user_id: userId,
     credential_id: credential.id,
     public_key: isoBase64URL.fromBuffer(credential.publicKey),
     counter: credential.counter,
@@ -213,5 +242,8 @@ export async function registrarPasskey(
     dispositivo: nombreDispositivo(ua),
   });
   if (error) return { error: error.code === "23505" ? "Este dispositivo ya estaba activado." : "No se pudo guardar." };
-  return { ok: true };
+
+  // el código se quema al usarse
+  await admin.from("lp_codigos").delete().eq("user_id", userId);
+  return abrirSesion(userId, redirectTo);
 }
