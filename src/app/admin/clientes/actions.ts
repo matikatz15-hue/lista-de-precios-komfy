@@ -92,6 +92,18 @@ export async function resetPasswordAction(formData: FormData) {
   redirect(`/admin/clientes/${id}?msg=${encodeURIComponent("Contraseña actualizada")}`);
 }
 
+export async function borrarPasskeysAction(formData: FormData) {
+  await assertAdmin();
+  const admin = createAdminClient();
+  const id = String(formData.get("id"));
+  const llave = String(formData.get("llave") ?? "");
+  let q = admin.from("lp_passkeys").delete().eq("user_id", id);
+  if (llave) q = q.eq("id", llave);
+  const { error } = await q;
+  if (error) redirect(`/admin/clientes/${id}?error=${encodeURIComponent(error.message)}`);
+  redirect(`/admin/clientes/${id}?msg=${encodeURIComponent("Huella/cara borrada. Ese dispositivo vuelve a entrar con contraseña.")}`);
+}
+
 export async function deleteClientAction(formData: FormData) {
   await assertAdmin();
   const admin = createAdminClient();

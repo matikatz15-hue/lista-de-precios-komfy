@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Profile, Discount, Line, Product } from "@/lib/types";
 import { SubmitButton } from "@/components/SubmitButton";
 import { BackLink } from "@/components/BackLink";
@@ -8,6 +9,7 @@ import {
   updateClientAction,
   resetPasswordAction,
   deleteClientAction,
+  borrarPasskeysAction,
   upsertGeneralDiscountAction,
   upsertLineDiscountAction,
   addProductDiscountAction,
@@ -32,6 +34,11 @@ export default async function ClientDetailPage({ params, searchParams }: Props) 
   ]);
 
   if (profileRes.error || !profileRes.data) notFound();
+  const { data: llaves } = await createAdminClient()
+    .from("lp_passkeys")
+    .select("id, dispositivo, created_at, last_used_at")
+    .eq("user_id", id)
+    .order("created_at");
   const profile = profileRes.data as Profile;
   if (profile.role !== "client") notFound();
 
@@ -115,6 +122,38 @@ export default async function ClientDetailPage({ params, searchParams }: Props) 
             </SubmitButton>
           </div>
         </form>
+      </section>
+
+      {/* Huella / cara */}
+      <section className="bg-white rounded-xl border border-zinc-200 p-6 mb-6">
+        <h2 className="font-semibold mb-1">Huella o cara</h2>
+        <p className="text-sm text-zinc-500 mb-4">
+          El cliente la activa solo, después de entrar con su contraseña. Si pierde el celu, borrala acá.
+        </p>
+        {llaves?.length ? (
+          <ul className="divide-y divide-zinc-100">
+            {llaves.map((l) => (
+              <li key={l.id} className="flex items-center justify-between py-2 text-sm">
+                <span>
+                  <span className="font-semibold">{l.dispositivo ?? "Dispositivo"}</span>
+                  <span className="text-zinc-500">
+                    {" "}· activada el {new Date(l.created_at).toLocaleDateString("es-AR")}
+                    {l.last_used_at ? ` · último uso ${new Date(l.last_used_at).toLocaleDateString("es-AR")}` : " · sin usar todavía"}
+                  </span>
+                </span>
+                <form action={borrarPasskeysAction}>
+                  <input type="hidden" name="id" value={profile.id} />
+                  <input type="hidden" name="llave" value={l.id} />
+                  <SubmitButton pendingText="Borrando…" className="text-red-600 hover:text-red-700 text-sm font-semibold">
+                    Borrar
+                  </SubmitButton>
+                </form>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-zinc-400">Todavía no la activó en ningún dispositivo.</p>
+        )}
       </section>
 
       {/* Reset password */}

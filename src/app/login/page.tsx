@@ -1,6 +1,7 @@
 import { loginAction } from "./actions";
 import { PasswordInput } from "@/components/PasswordInput";
 import { SubmitButton } from "@/components/SubmitButton";
+import { PasskeyLogin } from "@/components/PasskeyLogin";
 
 type Props = { searchParams: Promise<{ error?: string; redirect_to?: string }> };
 
@@ -90,6 +91,7 @@ export default async function LoginPage({ searchParams }: Props) {
             El navegador te va a ofrecer guardar tu usuario y contraseña la primera vez.
           </p>
         </form>
+        <PasskeyLogin redirectTo={redirect_to} />
       </div>
     </div>
   );

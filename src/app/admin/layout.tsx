@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { logoutAction } from "@/app/login/actions";
 import { createClient } from "@/lib/supabase/server";
+import { PasskeyOffer } from "@/components/PasskeyOffer";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // The proxy already validated the role + auth; we just read the email from a
@@ -9,6 +10,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const cookieStore = await cookies();
   const emailCookie = cookieStore.get("kf_email")?.value ?? "";
   const supabase = await createClient();
+  const { data: yo } = await supabase.auth.getUser();
   const { count: nuevos } = await supabase
     .from("web_pendientes")
     .select("tn_variant_id", { count: "exact", head: true })
@@ -53,6 +55,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </form>
         </aside>
         <main className="flex-1 p-8 max-w-6xl">{children}</main>
+        {yo.user && <PasskeyOffer userId={yo.user.id} />}
       </div>
     </div>
   );

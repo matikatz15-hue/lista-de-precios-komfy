@@ -2,6 +2,7 @@ import { getPriceList } from "@/lib/data";
 import { DesktopView } from "@/components/PriceList/DesktopView";
 import { MobileView } from "@/components/PriceList/MobileView";
 import { PublicHeader } from "@/components/PublicHeader";
+import { PasskeyOffer } from "@/components/PasskeyOffer";
 
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
@@ -41,6 +42,7 @@ export default async function Page({ searchParams }: Props) {
       />
       <DesktopView lines={lines} settings={settings} />
       <MobileView lines={lines} settings={settings} />
+      {(viewer.kind === "client" || viewer.kind === "admin") && <PasskeyOffer userId={viewer.profile.id} />}
     </>
   );
 }
