@@ -191,7 +191,7 @@ function MobileVariant({ product: p, groupName }: { product: PricedProduct; grou
   return (
     <div className={s.var}>
       <div className={s.varLeft}>
-        <ColorSwatch hex={p.color_hex} hexSecondary={p.color_hex_secondary} className={s.swatch} size={18} />
+        <ColorSwatch hex={p.color_hex} hexSecondary={p.color_hex_secondary} name={p.color_name} className={s.swatch} size={18} />
         <div className={s.varInfo}>
           {showProductName ? (
             <>

@@ -172,7 +172,7 @@ export default async function NuevosPage({ searchParams }: PageProps) {
                         </td>
                         <td className="px-2 py-2">
                           <span className="inline-flex items-center gap-2">
-                            <ColorSwatch hex={v.color_hex} hexSecondary={v.color_hex_secondary} size={12} className="rounded-full border border-zinc-300" />
+                            <ColorSwatch hex={v.color_hex} hexSecondary={v.color_hex_secondary} name={v.color_name} size={12} className="rounded-full border border-zinc-300" />
                             {v.color_name || <span className="text-zinc-400">sin color</span>}
                           </span>
                         </td>

@@ -190,7 +190,7 @@ function ProductBlock({ group }: { group: PricedGroup }) {
               <td className={s.code}>{p.sku}</td>
               <td className={s.colorCell}>
                 <span className={s.swatch}>
-                  <ColorSwatch hex={p.color_hex} hexSecondary={p.color_hex_secondary} className={s.dot} size={11} />
+                  <ColorSwatch hex={p.color_hex} hexSecondary={p.color_hex_secondary} name={p.color_name} className={s.dot} size={11} />
                   <span>{p.color_name}</span>
                 </span>
               </td>
