@@ -223,3 +223,60 @@ export async function revisarWebAction() {
   const n = j.resumen?.pendientes_nuevos ?? 0;
   volver({ saved: n ? `Listo: ${n} color${n > 1 ? "es" : ""} nuevo${n > 1 ? "s" : ""} de la web.` : "Listo: no hay nada nuevo en la web." });
 }
+
+// ---------- Sacados de la web (24-11-2026) ----------
+// lista-web anota en web_bajas lo que está en la lista y ya no está publicado en
+// la web. Nada se saca solo: acá se confirma. «Sacar» = active=false (no se borra:
+// las listas fechadas lo conservan y se puede volver atrás con «Volver a la lista»).
+
+// Recuenta "N terminaciones" de los grupos tocados, si usan ese formato.
+async function recontarTerminaciones(supabase: Awaited<ReturnType<typeof createClient>>, productIds: string[]) {
+  const { data: prods } = await supabase.from("products").select("product_group_id").in("id", productIds);
+  const grupos = [...new Set((prods ?? []).map((p) => p.product_group_id as string))];
+  for (const g of grupos) {
+    const { data: grupo } = await supabase.from("product_groups").select("meta_label").eq("id", g).single();
+    const { count } = await supabase.from("products").select("id", { count: "exact", head: true }).eq("product_group_id", g).eq("active", true);
+    if (grupo?.meta_label && /^\d+\s+terminaci/i.test(grupo.meta_label) && count) {
+      await supabase.from("product_groups").update({ meta_label: `${count} terminaci${count > 1 ? "ones" : "ón"}` }).eq("id", g);
+    }
+  }
+}
+
+function idsDe(formData: FormData) {
+  const ids = formData.getAll("baja").map(String);
+  if (!ids.length) volver({ error: "No tildaste ningún producto." });
+  return ids;
+}
+
+export async function sacarBajasAction(formData: FormData) {
+  const { supabase, email } = await quien();
+  const ids = idsDe(formData);
+  const { error } = await supabase.from("products").update({ active: false, updated_at: new Date().toISOString() }).in("id", ids);
+  if (error) volver({ error: error.message });
+  await supabase.from("web_bajas").update({ estado: "sacado", resuelto_at: new Date().toISOString(), resuelto_por: email }).in("product_id", ids);
+  await recontarTerminaciones(supabase, ids);
+  invalidatePriceList();
+  revalidatePath("/admin", "layout");
+  volver({ saved: `${ids.length} producto${ids.length > 1 ? "s" : ""} fuera de la lista. Si te arrepentís, está en «Ya resueltos» → «Volver a la lista».` });
+}
+
+export async function mantenerBajasAction(formData: FormData) {
+  const { supabase, email } = await quien();
+  const ids = idsDe(formData);
+  const { error } = await supabase.from("web_bajas").update({ estado: "mantenido", resuelto_at: new Date().toISOString(), resuelto_por: email }).in("product_id", ids);
+  if (error) volver({ error: error.message });
+  revalidatePath("/admin", "layout");
+  volver({ saved: `Listo: ${ids.length > 1 ? "quedan" : "queda"} en la lista y no se vuelve a preguntar mientras siga fuera de la web.` });
+}
+
+export async function volverBajasAction(formData: FormData) {
+  const { supabase, email } = await quien();
+  const ids = idsDe(formData);
+  const { error } = await supabase.from("products").update({ active: true, updated_at: new Date().toISOString() }).in("id", ids);
+  if (error) volver({ error: error.message });
+  await supabase.from("web_bajas").update({ estado: "mantenido", resuelto_at: new Date().toISOString(), resuelto_por: email }).in("product_id", ids);
+  await recontarTerminaciones(supabase, ids);
+  invalidatePriceList();
+  revalidatePath("/admin", "layout");
+  volver({ saved: `${ids.length} producto${ids.length > 1 ? "s" : ""} de nuevo en la lista.` });
+}

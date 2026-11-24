@@ -181,7 +181,9 @@ export async function getPriceList(opts?: {
                   discountPercent: percent,
                 };
               }),
-          })),
+          }))
+          // un producto sin ningún color activo (todos sacados) no se muestra vacío
+          .filter((group) => group.products.length > 0),
       }));
     }
 

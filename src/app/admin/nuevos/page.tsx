@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ColorSwatch } from "@/components/ColorSwatch";
 import { SubmitButton } from "@/components/SubmitButton";
 import { formatPrice } from "@/lib/format";
-import { resolverAction, guardarAction, recuperarAction, revisarWebAction } from "./actions";
+import { resolverAction, guardarAction, recuperarAction, revisarWebAction, sacarBajasAction, mantenerBajasAction, volverBajasAction } from "./actions";
 import { requireEditor } from "@/lib/roles";
 
 type Fila = {
@@ -30,6 +30,23 @@ type Fila = {
   resuelto_por: string | null;
 };
 
+type Baja = {
+  product_id: string;
+  sku: string | null;
+  producto: string | null;
+  color_name: string | null;
+  color_hex: string | null;
+  color_hex_secondary: string | null;
+  motivo: "despublicado" | "borrado";
+  estado: "pendiente" | "sacado" | "mantenido";
+  detectado_at: string;
+  resuelto_at: string | null;
+  resuelto_por: string | null;
+};
+
+const fecha = (iso: string | null) =>
+  iso ? new Date(iso).toLocaleDateString("es-AR", { timeZone: "America/Argentina/Buenos_Aires", day: "2-digit", month: "2-digit" }) : "";
+
 type PageProps = { searchParams: Promise<{ saved?: string; error?: string }> };
 
 export const dynamic = "force-dynamic";
@@ -37,12 +54,16 @@ export const dynamic = "force-dynamic";
 export default async function NuevosPage({ searchParams }: PageProps) {
   const { saved, error } = await searchParams;
   const supabase = await createClient();
-  const [pendRes, linesRes, settingsRes, prodRes] = await Promise.all([
+  const [pendRes, linesRes, settingsRes, prodRes, bajasRes] = await Promise.all([
     supabase.from("web_pendientes").select("*").in("estado", ["pendiente", "descartado"]).order("tn_product_id").order("orden"),
     supabase.from("lines").select("slug, name").order("sort_order"),
     supabase.from("settings").select("web_sync_at, web_sync_resumen").eq("id", 1).single(),
     supabase.from("products").select("sku"),
+    supabase.from("web_bajas").select("*").order("detectado_at", { ascending: false }),
   ]);
+  const bajas = (bajasRes.data ?? []) as Baja[];
+  const bajasPend = bajas.filter((b) => b.estado === "pendiente");
+  const bajasResueltas = bajas.filter((b) => b.estado !== "pendiente");
   const filas = (pendRes.data ?? []) as Fila[];
   const lineas = (linesRes.data ?? []) as { slug: string; name: string }[];
   const enLista = new Set(((prodRes.data ?? []) as { sku: string }[]).map((p) => p.sku));
@@ -75,6 +96,7 @@ export default async function NuevosPage({ searchParams }: PageProps) {
           <p className="text-sm text-zinc-600 mt-1 max-w-2xl">
             Productos y colores que están publicados en komfy.com.ar y todavía no en la lista mayorista.
             Nada se publica solo: revisá, corregí si hace falta y aceptá. El precio viene del Vinculador.
+            Lo que se saca de la web aparece en «Sacados de la web»: tampoco se saca solo de la lista.
           </p>
           <p className="text-xs text-zinc-500 mt-2">
             La web se revisa sola cada 3 horas.
@@ -93,6 +115,51 @@ export default async function NuevosPage({ searchParams }: PageProps) {
 
       {saved && <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800">{saved}</div>}
       {error && <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">{error}</div>}
+
+      {bajasPend.length > 0 && (
+        <form className="mb-8 bg-white rounded-xl border border-red-200 overflow-hidden">
+          <div className="px-4 py-3 border-b border-red-100 bg-red-50/60">
+            <h2 className="text-lg font-bold text-zinc-900">Sacados de la web ({bajasPend.length})</h2>
+            <p className="text-xs text-zinc-600 mt-0.5">
+              Están en la lista mayorista pero ya no están publicados en komfy.com.ar. Decidí si salen de la lista o se quedan
+              (por ejemplo, si se siguen vendiendo por mayor). Sacarlos no los borra: las listas fechadas los conservan.
+            </p>
+          </div>
+          <table className="w-full text-sm">
+            <tbody>
+              {bajasPend.map((b) => (
+                <tr key={b.product_id} className="border-b border-zinc-50 last:border-0">
+                  <td className="pl-4 pr-2 py-2 w-8">
+                    <input type="checkbox" name="baja" value={b.product_id} defaultChecked className="h-4 w-4 accent-zinc-900" />
+                  </td>
+                  <td className="px-2 py-2 font-medium text-zinc-900">{b.producto}</td>
+                  <td className="px-2 py-2">
+                    <span className="inline-flex items-center gap-2">
+                      <ColorSwatch hex={b.color_hex ?? "#9A9A9A"} hexSecondary={b.color_hex_secondary} name={b.color_name} size={12} className="rounded-full border border-zinc-300" />
+                      {b.color_name}
+                    </span>
+                  </td>
+                  <td className="px-2 py-2 font-mono text-xs text-zinc-600">{b.sku ?? "—"}</td>
+                  <td className="px-4 py-2 text-xs text-right">
+                    <span className={`rounded px-2 py-0.5 font-semibold ${b.motivo === "borrado" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-800"}`}>
+                      {b.motivo === "borrado" ? "borrado de la web" : "despublicado en la web"}
+                    </span>
+                    <span className="ml-2 text-zinc-400">desde el {fecha(b.detectado_at)}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="flex items-center gap-2 px-4 py-3 bg-zinc-50 border-t border-zinc-100">
+            <SubmitButton formAction={sacarBajasAction} pendingText="Sacando…" className="px-4 py-2 rounded-lg bg-zinc-900 text-white text-sm font-semibold hover:bg-zinc-700">
+              Sacar tildados de la lista
+            </SubmitButton>
+            <SubmitButton formAction={mantenerBajasAction} pendingText="Guardando…" className="px-4 py-2 rounded-lg border border-zinc-300 bg-white text-sm font-medium text-zinc-700 hover:bg-zinc-100">
+              Dejarlos en la lista
+            </SubmitButton>
+          </div>
+        </form>
+      )}
 
       {productos.length === 0 && (
         <div className="rounded-xl border border-zinc-200 bg-white px-6 py-10 text-center text-zinc-500">
@@ -209,6 +276,40 @@ export default async function NuevosPage({ searchParams }: PageProps) {
           );
         })}
       </div>
+
+      {bajasResueltas.length > 0 && (
+        <details className="mt-10">
+          <summary className="cursor-pointer text-sm font-semibold text-zinc-600">
+            Sacados de la web ya resueltos ({bajasResueltas.length})
+          </summary>
+          <form className="mt-3 bg-white rounded-xl border border-zinc-200">
+            <table className="w-full text-sm">
+              <tbody>
+                {bajasResueltas.map((b) => (
+                  <tr key={b.product_id} className="border-b border-zinc-50 last:border-0">
+                    <td className="pl-4 pr-2 py-2 w-8"><input type="checkbox" name="baja" value={b.product_id} className="h-4 w-4" /></td>
+                    <td className="px-2 py-2">{b.producto}</td>
+                    <td className="px-2 py-2">{b.color_name}</td>
+                    <td className="px-2 py-2 font-mono text-xs text-zinc-500">{b.sku ?? "—"}</td>
+                    <td className="px-2 py-2 text-xs">
+                      {b.estado === "sacado" ? <span className="text-zinc-500">fuera de la lista</span> : <span className="text-emerald-700">se quedó en la lista</span>}
+                    </td>
+                    <td className="px-4 py-2 text-xs text-zinc-400 text-right">{fecha(b.resuelto_at)} · {b.resuelto_por}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="flex gap-2 px-4 py-3 bg-zinc-50 border-t border-zinc-100">
+              <SubmitButton formAction={volverBajasAction} pendingText="Volviendo…" className="px-4 py-2 rounded-lg border border-zinc-300 bg-white text-sm font-medium text-zinc-700 hover:bg-zinc-100">
+                Volver a la lista
+              </SubmitButton>
+              <SubmitButton formAction={sacarBajasAction} pendingText="Sacando…" className="px-4 py-2 rounded-lg text-sm font-medium text-zinc-500 hover:text-red-700 hover:bg-red-50">
+                Sacar de la lista
+              </SubmitButton>
+            </div>
+          </form>
+        </details>
+      )}
 
       {descartados.length > 0 && (
         <details className="mt-10">

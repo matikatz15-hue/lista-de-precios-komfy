@@ -11,10 +11,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const cookieStore = await cookies();
   const emailCookie = cookieStore.get("kf_email")?.value ?? "";
   const supabase = await createClient();
-  const [{ count: nuevos }, rol] = await Promise.all([
+  const [{ count: nuevosWeb }, { count: bajasWeb }, rol] = await Promise.all([
     supabase.from("web_pendientes").select("tn_variant_id", { count: "exact", head: true }).eq("estado", "pendiente"),
+    supabase.from("web_bajas").select("product_id", { count: "exact", head: true }).eq("estado", "pendiente"),
     rolDelPanel(),
   ]);
+  // el número cuenta lo nuevo de la web + lo que se sacó de la web (ambos esperan una decisión)
+  const nuevos = (nuevosWeb ?? 0) + (bajasWeb ?? 0);
   // Equipo Komfy con rol "viewer": ve todo el admin pero no puede tocar nada.
   // El fieldset deshabilita cada control; las escrituras igual las frenan requireEditor() + RLS.
   const soloMira = rol !== "admin";
