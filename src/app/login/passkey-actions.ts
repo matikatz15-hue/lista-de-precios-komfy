@@ -186,20 +186,15 @@ async function validarCodigo(email: string, codigo: string): Promise<string | nu
   return profile.id as string;
 }
 
-export async function opcionesActivacion(
-  email: string,
-  codigo: string
-): Promise<{ id: string; options: PublicKeyCredentialCreationOptionsJSON } | { error: string }> {
-  const userId = await validarCodigo(email, codigo);
-  if (!userId) return { error: CODIGO_INVALIDO };
-
+// Opciones de alta de una llave nueva para ese usuario (no repite las que ya tiene).
+async function opcionesRegistroPara(userId: string, emailRespaldo: string) {
   const admin = createAdminClient();
   const [{ data: existentes }, { data: profile }, { data: u }] = await Promise.all([
     admin.from("lp_passkeys").select("credential_id, transports").eq("user_id", userId),
     admin.from("profiles").select("full_name").eq("id", userId).single(),
     admin.auth.admin.getUserById(userId),
   ]);
-  const mail = u.user?.email ?? email;
+  const mail = u.user?.email ?? emailRespaldo;
 
   const options = await generateRegistrationOptions({
     rpName: RP_NAME,
@@ -219,17 +214,10 @@ export async function opcionesActivacion(
   return { id, options };
 }
 
-export async function activarConCodigo(
-  id: string,
-  response: RegistrationResponseJSON,
-  email: string,
-  codigo: string,
-  redirectTo: string
-): Promise<{ destino: string } | { error: string }> {
-  const userId = await validarCodigo(email, codigo);
-  if (!userId) return { error: CODIGO_INVALIDO };
+// Verifica el alta y guarda la llave pública. null = salió bien.
+async function guardarLlave(userId: string, id: string, response: RegistrationResponseJSON): Promise<string | null> {
   const challenge = await tomarDesafio(id, "registro", userId);
-  if (!challenge) return { error: "Se venció el intento. Probá de nuevo." };
+  if (!challenge) return "Se venció el intento. Probá de nuevo.";
 
   let verificado;
   try {
@@ -241,14 +229,13 @@ export async function activarConCodigo(
       requireUserVerification: true,
     });
   } catch {
-    return { error: "No se pudo activar. Probá de nuevo." };
+    return "No se pudo activar. Probá de nuevo.";
   }
-  if (!verificado.verified || !verificado.registrationInfo) return { error: "No se pudo activar." };
+  if (!verificado.verified || !verificado.registrationInfo) return "No se pudo activar.";
 
   const { credential } = verificado.registrationInfo;
   const ua = (await headers()).get("user-agent") ?? "";
-  const admin = createAdminClient();
-  const { error } = await admin.from("lp_passkeys").insert({
+  const { error } = await createAdminClient().from("lp_passkeys").insert({
     user_id: userId,
     credential_id: credential.id,
     public_key: isoBase64URL.fromBuffer(credential.publicKey),
@@ -256,9 +243,65 @@ export async function activarConCodigo(
     transports: credential.transports ?? null,
     dispositivo: nombreDispositivo(ua),
   });
-  if (error) return { error: error.code === "23505" ? "Este dispositivo ya estaba activado." : "No se pudo guardar." };
+  if (error) return error.code === "23505" ? "Este dispositivo ya estaba activado." : "No se pudo guardar.";
+  return null;
+}
+
+export async function opcionesActivacion(
+  email: string,
+  codigo: string
+): Promise<{ id: string; options: PublicKeyCredentialCreationOptionsJSON } | { error: string }> {
+  const userId = await validarCodigo(email, codigo);
+  if (!userId) return { error: CODIGO_INVALIDO };
+  return opcionesRegistroPara(userId, email);
+}
+
+export async function activarConCodigo(
+  id: string,
+  response: RegistrationResponseJSON,
+  email: string,
+  codigo: string,
+  redirectTo: string
+): Promise<{ destino: string } | { error: string }> {
+  const userId = await validarCodigo(email, codigo);
+  if (!userId) return { error: CODIGO_INVALIDO };
+  const fallo = await guardarLlave(userId, id, response);
+  if (fallo) return { error: fallo };
 
   // el código se quema al usarse
-  await admin.from("lp_codigos").delete().eq("user_id", userId);
+  await createAdminClient().from("lp_codigos").delete().eq("user_id", userId);
   return abrirSesion(userId, redirectTo);
+}
+
+// ---------- Activar este dispositivo estando ya adentro (entró con contraseña) ----------
+// La contraseña ya probó quién es: no hace falta código. Solo para la sesión abierta.
+
+async function usuarioDeLaSesion(): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) return null;
+  const { data: profile } = await createAdminClient().from("profiles").select("active").eq("id", data.user.id).single();
+  return profile?.active ? data.user.id : null;
+}
+
+export async function opcionesActivacionSesion(): Promise<
+  { id: string; options: PublicKeyCredentialCreationOptionsJSON } | { error: string }
+> {
+  const userId = await usuarioDeLaSesion();
+  if (!userId) return { error: "Tu sesión se cerró. Volvé a entrar." };
+  try {
+    return await opcionesRegistroPara(userId, "");
+  } catch {
+    return { error: "No se pudo iniciar. Probá de nuevo." };
+  }
+}
+
+export async function activarConSesion(
+  id: string,
+  response: RegistrationResponseJSON
+): Promise<{ ok: true } | { error: string }> {
+  const userId = await usuarioDeLaSesion();
+  if (!userId) return { error: "Tu sesión se cerró. Volvé a entrar." };
+  const fallo = await guardarLlave(userId, id, response);
+  return fallo ? { error: fallo } : { ok: true };
 }

@@ -10,6 +10,7 @@ import {
 } from "@/app/login/passkey-actions";
 import { entrarEquipo } from "@/app/login/kid-actions";
 import { KidError, kidApi, nombreDisp } from "@/lib/komfy-id-cliente";
+import { marcarBio } from "@/lib/bio-dispositivo";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -89,9 +90,11 @@ export function PasskeyLogin({ redirectTo }: { redirectTo?: string }) {
       // No es llave de cliente: que la verifique Komfy ID.
       const d = await kidApi("login_fin", { ...resp, usuario: null });
       if (!d.token) throw new Error("No se pudo entrar.");
+      marcarBio("activado");
       await abrirSesionEquipo(d.token);
       return;
     }
+    marcarBio("activado");
     window.location.assign(r.destino);
   }
 
@@ -113,6 +116,7 @@ export function PasskeyLogin({ redirectTo }: { redirectTo?: string }) {
     const resp = await startRegistration({ optionsJSON: o.options });
     const r = await activarConCodigo(o.id, resp, email, codigo, redirectTo ?? "");
     if ("error" in r) throw new Error(r.error);
+    marcarBio("activado");
     window.location.assign(r.destino);
   }
 
@@ -123,6 +127,7 @@ export function PasskeyLogin({ redirectTo }: { redirectTo?: string }) {
       optionsJSON: { ...o, authenticatorSelection: { ...(o.authenticatorSelection || {}), authenticatorAttachment: "platform" } },
     });
     const fin = await kidApi("registro_fin", { ...base, apodo: nombreDisp(), ...resp });
+    marcarBio("activado");
     // Activado: si Komfy ID ya devolvió sesión la usamos; si no, entramos con la llave nueva.
     if (fin?.token) await abrirSesionEquipo(fin.token);
     else await ingresar();

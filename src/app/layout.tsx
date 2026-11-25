@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans, Barlow_Condensed } from "next/font/google";
 import "./globals.css";
+import { OfrecerBiometria } from "@/components/OfrecerBiometria";
 
 const notoSans = Noto_Sans({
   variable: "--font-noto",
@@ -24,7 +25,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body className={`${notoSans.variable} ${barlowCondensed.variable}`}>{children}</body>
+      <body className={`${notoSans.variable} ${barlowCondensed.variable}`}>
+        {children}
+        <OfrecerBiometria />
+      </body>
     </html>
   );
 }

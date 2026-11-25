@@ -50,6 +50,10 @@ export async function loginAction(formData: FormData) {
     maxAge: ROLE_COOKIE_MAX_AGE,
   });
 
+  // Entró con contraseña: en la próxima pantalla le ofrecemos activar huella o cara
+  // en este dispositivo (el pop-up se fija si ya la tiene). Lo lee el navegador, dura 10 min.
+  cookieStore.set("kf_bio_ofrecer", "1", { secure: true, sameSite: "lax", path: "/", maxAge: 600 });
+
   if (redirectTo && redirectTo.startsWith("/")) {
     if (redirectTo.startsWith("/admin") && profile.role !== "admin" && profile.role !== "viewer") {
       redirect("/");
