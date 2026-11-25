@@ -92,6 +92,18 @@ export async function opcionesIngreso(): Promise<
   try {
     const options = await generateAuthenticationOptions({ rpID: RP_ID, userVerification: "required", timeout: 60000 });
     const id = await guardarDesafio(options.challenge, "ingreso", null);
+    // Mismo botón para el equipo: el desafío también queda anotado en Komfy ID, así una llave
+    // de Komfy ID de este dominio se verifica allá (login_fin). Si falla, los clientes entran igual.
+    await createAdminClient()
+      .from("kid_challenges")
+      .insert({
+        challenge: options.challenge,
+        usuario_id: null,
+        tipo: "login",
+        rp_id: RP_ID,
+        expira: new Date(Date.now() + CHALLENGE_TTL_MS).toISOString(),
+      })
+      .then(() => null, () => null);
     return { id, options };
   } catch {
     return { error: "No se pudo iniciar el ingreso. Probá de nuevo." };
@@ -102,7 +114,7 @@ export async function ingresarConPasskey(
   id: string,
   response: AuthenticationResponseJSON,
   redirectTo: string
-): Promise<{ destino: string } | { error: string }> {
+): Promise<{ destino: string } | { error: string } | { equipo: true }> {
   const fallo = { error: "No reconocimos este dispositivo. Pedile a Komfy un código para activarlo." };
   const challenge = await tomarDesafio(id, "ingreso");
   if (!challenge) return { error: "Se venció el intento. Probá de nuevo." };
@@ -113,7 +125,10 @@ export async function ingresarConPasskey(
     .select("id, user_id, public_key, counter, transports")
     .eq("credential_id", response.id)
     .maybeSingle();
-  if (!llave) return fallo;
+  // No es una llave de cliente: puede ser de Komfy ID (equipo). Eso lo verifica Komfy ID.
+  if (!llave) return { equipo: true };
+  // Es de cliente: el desafío que dejamos en Komfy ID ya no hace falta.
+  await admin.from("kid_challenges").delete().eq("challenge", challenge).then(() => null, () => null);
 
   let verificado;
   try {
